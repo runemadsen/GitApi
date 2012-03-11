@@ -19,17 +19,16 @@ module GitApi
     #
     # name  - The String name of the repository. The ".git" extension will be added if not provided
     #
-    # Examples
-    #
-    #   curl -d "name=myrepo" http://myserver.com/repos
-    #
     # Returns a JSON string of the created repo 
     post '/repos' do
       repo_name = params[:name]
       repo_name += ".git" unless repo_name =~ /\.git/
       repo = Grit::Repo.init_bare(File.join(settings.git_path, repo_name))
       #`mv #{git_repo}/hooks/post-update.sample #{git_repo}/hooks/post-update`
-      json_reponse(repo)
+      
+      { 
+        :path => repo.path
+      }.to_json
     end
     
     # GET   /repos/:repo - get repo information (with clone url if set in Sinatra)
@@ -37,6 +36,31 @@ module GitApi
     # GET   /repos/:repo/branches - list all branches
     # POST  /repos/:repo/branches - create branch
     # GET   /repos/:repo/branches/:branch - list all files in branch
+    
+    # Commit a new file and its contents to specified branch. This methods loads all current files in specified branch into index
+    # before committing the new file.
+    #
+    # repo      - The String name of the repo (including .git)
+    # branch    - The String name of the branch (e.g. "master")
+    # name      - The String name of the file.
+    # contents  - The String contents of the file
+    # encoding  - The String encoding of the contents ("utf-8" or "base64")
+    # user      - The String name of the commit user
+    # email     - The String email of the commit user
+    # message   - The String commit message
+    #
+    # Returns a JSON string containing sha of the commit
+    post '/repos/:repo/branches/:branch/files' do
+      repo = Grit::Repo.new(File.join(settings.git_path, params[:repo]))
+      index = Grit::Index.new(repo)
+      index.read_tree(params[:branch])
+      index.add(params[:name], params[:contents])
+      sha = index.commit(params[:message], repo.commit_count > 0 ? [repo.commit(params[:branch])] : nil, Grit::Actor.new(params[:user], params[:email]), nil, params[:branch])
+      {
+        :commit_sha => sha
+      }.to_json
+    end
+    
     # POST  /repos/:repo/branches/:branch/files - commit new file in branch
     # PUT   /repos/:repo/branches/:branch/files - commit array of files in branch (overrides all files and deletes the one not in array)
     # GET   /repos/:repo/branches/:branch/files/:filename - get file data in branch
