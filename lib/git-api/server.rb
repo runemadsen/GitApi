@@ -40,7 +40,7 @@ module GitApi
     #
     # Returns a JSON string containing and array of all files in master, plus sha of tree
     get '/repos/:repo/branches/:branch/files' do
-      repo = Grit::Repo.new(File.join(settings.git_path, params[:repo]))
+      repo = get_repo(File.join(settings.git_path, params[:repo]))
       tree = repo.tree(params[:branch])
       files = tree.contents.map do |blob|
         { :name => blob.name }
@@ -95,7 +95,9 @@ module GitApi
     #
     # Returns a JSON string containing name and contents of file
     get '/repos/:repo/branches/:branch/files/:name' do
-      blob = Grit::Repo.new(File.join(settings.git_path, params[:repo])).tree(params[:branch])/params[:name]
+      repo = get_repo(File.join(settings.git_path, params[:repo]))
+      blob = repo.tree(params[:branch])/params[:name]
+      throw(:halt, [404, "Repository Not Found"]) if blob.nil?
       { 
         :name => blob.name,
         :contents => blob.data

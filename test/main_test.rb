@@ -73,6 +73,15 @@ class GitApiTest < Test::Unit::TestCase
     FileUtils.rm_rf path
   end
   
+  def test_read_files_empty_branch
+    post '/repos', {:name => GIT_REPO}
+    get "/repos/#{GIT_REPO}.git/branches/master/files"
+    json = JSON.parse(last_response.body)
+    assert last_response.ok?
+    assert_equal(json["files"].size, 0)
+    FileUtils.rm_rf path
+  end
+  
   def test_read_file
     post '/repos', {:name => GIT_REPO}
     post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :contents => "Hello There", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
@@ -84,6 +93,21 @@ class GitApiTest < Test::Unit::TestCase
     FileUtils.rm_rf path
   end
   
+  # Test 404's
+  # All routes use shared function, so they should all behave the same
+  # ------------------------------------------------------------------
   
+  def test_read_files_wrong_repo
+    get "/repos/#{GIT_REPO}.git/branches/master/files/myfile.txt"
+    assert_equal 404, last_response.status
+    FileUtils.rm_rf path
+  end
+  
+  def test_read_files_wrong_file
+    post '/repos', {:name => GIT_REPO}
+    get "/repos/#{GIT_REPO}.git/branches/master/files/myfile.txt"
+    assert_equal 404, last_response.status
+    FileUtils.rm_rf path
+  end
   
 end

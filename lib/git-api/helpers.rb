@@ -1,8 +1,17 @@
 module GitApi
   module Helpers
     
+    def get_repo(path)
+      begin
+        repo = Grit::Repo.new(path)
+      rescue
+        throw(:halt, [404, "Repository Not Found"])
+      end
+      repo
+    end
+    
     def make_file(repo, branch, name, contents, encoding, user, email, message)
-      repo = Grit::Repo.new(File.join(settings.git_path, repo))
+      repo = get_repo(File.join(settings.git_path, repo))
       index = Grit::Index.new(repo)
       index.read_tree(branch)
       index.add(name, contents)
