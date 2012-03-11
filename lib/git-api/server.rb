@@ -63,11 +63,25 @@ module GitApi
     #
     # Returns a JSON string containing sha of the commit
     post '/repos/:repo/branches/:branch/files' do
-      repo = Grit::Repo.new(File.join(settings.git_path, params[:repo]))
-      index = Grit::Index.new(repo)
-      index.read_tree(params[:branch])
-      index.add(params[:name], params[:contents])
-      sha = index.commit(params[:message], repo.commit_count > 0 ? [repo.commit(params[:branch])] : nil, Grit::Actor.new(params[:user], params[:email]), nil, params[:branch])
+      sha = make_file(params[:repo], params[:branch], params[:name], params[:contents], params[:encoding], params[:user], params[:email], params[:message])
+      { :commit_sha => sha }.to_json
+    end
+    
+    # Commit an update to a file and its contents to specified branch. This methods loads all current files in specified branch into index
+    # before committing the new file. This is exactly the same as the equal POST route
+    #
+    # repo      - The String name of the repo (including .git)
+    # branch    - The String name of the branch (e.g. "master")
+    # name      - The String name of the file.
+    # contents  - The String contents of the file
+    # encoding  - The String encoding of the contents ("utf-8" or "base64")
+    # user      - The String name of the commit user
+    # email     - The String email of the commit user
+    # message   - The String commit message
+    #
+    # Returns a JSON string containing sha of the commit
+    post '/repos/:repo/branches/:branch/files' do
+      sha = make_file(params[:repo], params[:branch], params[:name], params[:contents], params[:encoding], params[:user], params[:email], params[:message])
       { :commit_sha => sha }.to_json
     end
     

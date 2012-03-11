@@ -51,6 +51,16 @@ class GitApiTest < Test::Unit::TestCase
     FileUtils.rm_rf path
   end
   
+  def test_update_file
+    post '/repos', {:name => GIT_REPO}
+    post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :contents => "Hello There", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
+    blob = Grit::Repo.new(path).tree("master")/"myfile.txt"
+    assert last_response.ok?
+    assert_equal(blob.data, "Hello There")
+    assert last_response.body.include?("commit_sha")
+    FileUtils.rm_rf path
+  end
+  
   def test_read_files
     post '/repos', {:name => GIT_REPO}
     post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :contents => "Hello There", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
