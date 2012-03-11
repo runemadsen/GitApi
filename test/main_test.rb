@@ -73,6 +73,17 @@ class GitApiTest < Test::Unit::TestCase
     FileUtils.rm_rf path
   end
   
+  def test_read_file
+    post '/repos', {:name => GIT_REPO}
+    post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :contents => "Hello There", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
+    get "/repos/#{GIT_REPO}.git/branches/master/files/myfile.txt"
+    json = JSON.parse(last_response.body)
+    assert last_response.ok?
+    assert_equal(json["name"], "myfile.txt")
+    assert_equal(json["contents"], "Hello There")
+    FileUtils.rm_rf path
+  end
+  
   
   
 end

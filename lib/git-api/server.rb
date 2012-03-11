@@ -25,7 +25,6 @@ module GitApi
       repo_name += ".git" unless repo_name =~ /\.git/
       repo = Grit::Repo.init_bare(File.join(settings.git_path, repo_name))
       #`mv #{git_repo}/hooks/post-update.sample #{git_repo}/hooks/post-update`
-      
       { :path => repo.path }.to_json
     end
     
@@ -86,7 +85,24 @@ module GitApi
     end
     
     # PUT   /repos/:repo/branches/:branch/files - commit array of files in branch (overrides all files and deletes the one not in array)
+    
     # GET   /repos/:repo/branches/:branch/files/:filename - get file data in branch
+    # Get file in specified branch
+    #
+    # repo      - The String name of the repo (including .git)
+    # branch    - The String name of the branch (e.g. "master")
+    # name      - The String name of the file.
+    #
+    # Returns a JSON string containing name and contents of file
+    get '/repos/:repo/branches/:branch/files/:name' do
+      blob = Grit::Repo.new(File.join(settings.git_path, params[:repo])).tree(params[:branch])/params[:name]
+      { 
+        :name => blob.name,
+        :contents => blob.data
+      }.to_json
+    end
+    
+    
     # PUT   /repos/:repo/branches/:branch/files/:filename - commit update on file in branch
     
     #  Lower Level Git
