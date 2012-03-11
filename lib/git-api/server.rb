@@ -27,11 +27,6 @@ module GitApi
       #`mv #{git_repo}/hooks/post-update.sample #{git_repo}/hooks/post-update`
       { :path => repo.path }.to_json
     end
-    
-    # GET   /repos/:repo - get repo information (with clone url if set in Sinatra)
-    # PATCH /repos/:repo - edit repo (only name now)
-    # GET   /repos/:repo/branches - list all branches
-    # POST  /repos/:repo/branches - create branch
 
     # Get a list of all files in master.
     #
@@ -79,14 +74,11 @@ module GitApi
     # message   - The String commit message
     #
     # Returns a JSON string containing sha of the commit
-    post '/repos/:repo/branches/:branch/files' do
+    put '/repos/:repo/branches/:branch/files' do
       sha = make_file(params[:repo], params[:branch], params[:name], params[:contents], params[:encoding], params[:user], params[:email], params[:message])
       { :commit_sha => sha }.to_json
     end
     
-    # PUT   /repos/:repo/branches/:branch/files - commit array of files in branch (overrides all files and deletes the one not in array)
-    
-    # GET   /repos/:repo/branches/:branch/files/:filename - get file data in branch
     # Get file in specified branch
     #
     # repo      - The String name of the repo (including .git)
@@ -96,21 +88,36 @@ module GitApi
     # Returns a JSON string containing name and contents of file
     get '/repos/:repo/branches/:branch/files/:name' do
       repo = get_repo(File.join(settings.git_path, params[:repo]))
-      blob = repo.tree(params[:branch])/params[:name]
-      throw(:halt, [404, "Repository Not Found"]) if blob.nil?
+      blob = get_file_from_tree(repo, params[:branch], params[:name])
       { 
         :name => blob.name,
         :contents => blob.data
       }.to_json
     end
     
-    
-    # PUT   /repos/:repo/branches/:branch/files/:filename - commit update on file in branch
+    # TODO
+    # PUT   /repos/:repo/branches/:branch/files - commit array of files in branch (overrides all files and deletes the one not in array)
+    # GET   /repos/:repo - get repo information (with clone url if set in Sinatra)
+    # PATCH /repos/:repo - edit repo (only name now)
+    # GET   /repos/:repo/branches - list all branches
+    # POST  /repos/:repo/branches - create branch
     
     #  Lower Level Git
     #--------------------------------------------------------
     
-    # GET   /repos/:repo/blobs/:sha
+    # Get blob data from blob sha
+    #
+    # repo      - The String name of the repo (including .git)
+    # sha       - The String sha of the blob
+    #
+    # Returns a JSON string containing the contents of blob
+    get '/repos/:repo/blobs/:sha' do
+      repo = get_repo(File.join(settings.git_path, params[:repo]))
+      blob = get_blob(repo, params[:sha])
+      { :contents => blob.data }.to_json  
+    end
+    
+    # TODO
     # POST  /repos/:repo/blobs
     # GET   /repos/:repo/commits/:sha
     # POST  /repos/:repo/commits
