@@ -26,16 +26,28 @@ module GitApi
       repo = Grit::Repo.init_bare(File.join(settings.git_path, repo_name))
       #`mv #{git_repo}/hooks/post-update.sample #{git_repo}/hooks/post-update`
       
-      { 
-        :path => repo.path
-      }.to_json
+      { :path => repo.path }.to_json
     end
     
     # GET   /repos/:repo - get repo information (with clone url if set in Sinatra)
     # PATCH /repos/:repo - edit repo (only name now)
     # GET   /repos/:repo/branches - list all branches
     # POST  /repos/:repo/branches - create branch
-    # GET   /repos/:repo/branches/:branch - list all files in branch
+
+    # Get a list of all files in master.
+    #
+    # repo      - The String name of the repo (including .git)
+    # branch    - The String name of the branch (e.g. "master")
+    #
+    # Returns a JSON string containing and array of all files in master, plus sha of tree
+    get '/repos/:repo/branches/:branch/files' do
+      repo = Grit::Repo.new(File.join(settings.git_path, params[:repo]))
+      tree = repo.tree(params[:branch])
+      files = tree.contents.map do |blob|
+        { :name => blob.name }
+      end
+      { :files => files, :tree_sha => tree.id }.to_json
+    end
     
     # Commit a new file and its contents to specified branch. This methods loads all current files in specified branch into index
     # before committing the new file.
@@ -56,12 +68,9 @@ module GitApi
       index.read_tree(params[:branch])
       index.add(params[:name], params[:contents])
       sha = index.commit(params[:message], repo.commit_count > 0 ? [repo.commit(params[:branch])] : nil, Grit::Actor.new(params[:user], params[:email]), nil, params[:branch])
-      {
-        :commit_sha => sha
-      }.to_json
+      { :commit_sha => sha }.to_json
     end
     
-    # POST  /repos/:repo/branches/:branch/files - commit new file in branch
     # PUT   /repos/:repo/branches/:branch/files - commit array of files in branch (overrides all files and deletes the one not in array)
     # GET   /repos/:repo/branches/:branch/files/:filename - get file data in branch
     # PUT   /repos/:repo/branches/:branch/files/:filename - commit update on file in branch
