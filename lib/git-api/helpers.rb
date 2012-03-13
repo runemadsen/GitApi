@@ -30,5 +30,28 @@ module GitApi
       sha = index.commit(message, repo.commit_count > 0 ? [repo.commit(branch)] : nil, Grit::Actor.new(user, email), nil, branch)
     end
     
+    # Object to Hash conversion
+    # ---------------------------------------------------
+    
+    def repo_to_hash(repo)
+      { :path => repo.path }
+    end
+    
+    def tree_to_hash(tree)
+      files = tree.contents.map do |blob|
+        { :name => blob.name }
+      end
+      { :files => files, :tree_sha => tree.id }
+    end
+    
+    def blob_to_hash(blob)
+      { 
+        :name => blob.name,
+        :contents => blob.data
+      }
+    end
+    
+    
+    
   end
 end

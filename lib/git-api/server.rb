@@ -25,22 +25,36 @@ module GitApi
       repo_name += ".git" unless repo_name =~ /\.git/
       repo = Grit::Repo.init_bare(File.join(settings.git_path, repo_name))
       #`mv #{git_repo}/hooks/post-update.sample #{git_repo}/hooks/post-update`
-      { :path => repo.path }.to_json
+      repo_to_hash(repo).to_json
     end
 
-    # Get a list of all files in master.
+    # Get a list of all files in the branch root folder.
     #
     # repo      - The String name of the repo (including .git)
     # branch    - The String name of the branch (e.g. "master")
     #
-    # Returns a JSON string containing and array of all files in master, plus sha of tree
+    # Returns a JSON string containing and array of all files in branch, plus sha of the tree
     get '/repos/:repo/branches/:branch/files' do
       repo = get_repo(File.join(settings.git_path, params[:repo]))
       tree = repo.tree(params[:branch])
-      files = tree.contents.map do |blob|
-        { :name => blob.name }
+      tree_to_hash(tree).to_json
+    end
+    
+    # Get file (if file is specified) or array of files (if folder is specified) in branch
+    #
+    # repo      - The String name of the repo (including .git)
+    # branch    - The String name of the branch (e.g. "master")
+    # name      - The String name of the file or folder. Can be path in a subfolder (e.g. "images/thumbs/myfile.jpg")
+    #
+    # Returns a JSON string containing file content or an array of file contents
+    get '/repos/:repo/branches/:branch/files/*' do
+      repo = get_repo(File.join(settings.git_path, params[:repo]))
+      blob = get_file_from_tree(repo, params[:branch], params[:splat].first)
+      if(blob.is_a?(Grit::Tree))  
+        tree_to_hash(blob).to_json
+      else
+        blob_to_hash(blob).to_json
       end
-      { :files => files, :tree_sha => tree.id }.to_json
     end
     
     # Commit a new file and its contents to specified branch. This methods loads all current files in specified branch into index
@@ -79,24 +93,8 @@ module GitApi
       { :commit_sha => sha }.to_json
     end
     
-    # Get file in specified branch
-    #
-    # repo      - The String name of the repo (including .git)
-    # branch    - The String name of the branch (e.g. "master")
-    # name      - The String name of the file.
-    #
-    # Returns a JSON string containing name and contents of file
-    get '/repos/:repo/branches/:branch/files/:name' do
-      repo = get_repo(File.join(settings.git_path, params[:repo]))
-      blob = get_file_from_tree(repo, params[:branch], params[:name])
-      { 
-        :name => blob.name,
-        :contents => blob.data
-      }.to_json
-    end
-    
     # TODO
-    # PUT   /repos/:repo/branches/:branch/files - commit array of files in branch (overrides all files and deletes the one not in array)
+    # make the create/update/delete file functions accept array of files
     # GET   /repos/:repo - get repo information (with clone url if set in Sinatra)
     # PATCH /repos/:repo - edit repo (only name now)
     # GET   /repos/:repo/branches - list all branches
@@ -114,7 +112,7 @@ module GitApi
     get '/repos/:repo/blobs/:sha' do
       repo = get_repo(File.join(settings.git_path, params[:repo]))
       blob = get_blob(repo, params[:sha])
-      { :contents => blob.data }.to_json  
+      blob_to_hash(blob).to_json  
     end
     
     # TODO

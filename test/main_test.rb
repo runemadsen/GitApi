@@ -61,13 +61,35 @@ class GitApiTest < Test::Unit::TestCase
     FileUtils.rm_rf path
   end
   
+  def test_read_file
+    post '/repos', {:name => GIT_REPO}
+    post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :contents => "Hello There", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
+    get "/repos/#{GIT_REPO}.git/branches/master/files/myfile.txt"
+    assert last_response.ok?
+    json = JSON.parse(last_response.body)
+    assert_equal(json["name"], "myfile.txt")
+    assert_equal(json["contents"], "Hello There")
+    FileUtils.rm_rf path
+  end
+  
+  def test_read_file_in_folder
+    post '/repos', {:name => GIT_REPO}
+    post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "subfolder/myfile.txt", :contents => "Hello There", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
+    get "/repos/#{GIT_REPO}.git/branches/master/files/subfolder/myfile.txt"
+    assert last_response.ok?
+    json = JSON.parse(last_response.body)
+    assert_equal(json["name"], "myfile.txt")
+    assert_equal(json["contents"], "Hello There")
+    FileUtils.rm_rf path
+  end
+  
   def test_read_files
     post '/repos', {:name => GIT_REPO}
     post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :contents => "Hello There", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
-    post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile2.txt", :contents => "Hello There Again", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
+    post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile2.txt", :contents => "Hello There Again", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My Second Commit"}
     get "/repos/#{GIT_REPO}.git/branches/master/files"
-    json = JSON.parse(last_response.body)
     assert last_response.ok?
+    json = JSON.parse(last_response.body)
     assert_equal(json["files"].size, 2)
     assert_equal(json["files"][0]["name"], "myfile.txt")
     FileUtils.rm_rf path
@@ -76,20 +98,21 @@ class GitApiTest < Test::Unit::TestCase
   def test_read_files_empty_branch
     post '/repos', {:name => GIT_REPO}
     get "/repos/#{GIT_REPO}.git/branches/master/files"
-    json = JSON.parse(last_response.body)
     assert last_response.ok?
+    json = JSON.parse(last_response.body)
     assert_equal(json["files"].size, 0)
     FileUtils.rm_rf path
   end
   
-  def test_read_file
+  def test_read_files_in_folder
     post '/repos', {:name => GIT_REPO}
-    post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :contents => "Hello There", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
-    get "/repos/#{GIT_REPO}.git/branches/master/files/myfile.txt"
-    json = JSON.parse(last_response.body)
+    post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "subfolder/myfile.txt", :contents => "Hello There", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
+    post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "subfolder/myfile2.txt", :contents => "Hello There Again", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My Second Commit"}
+    get "/repos/#{GIT_REPO}.git/branches/master/files/subfolder"
     assert last_response.ok?
-    assert_equal(json["name"], "myfile.txt")
-    assert_equal(json["contents"], "Hello There")
+    json = JSON.parse(last_response.body)
+    assert_equal(json["files"].size, 2)
+    assert_equal(json["files"][0]["name"], "myfile.txt")
     FileUtils.rm_rf path
   end
   
