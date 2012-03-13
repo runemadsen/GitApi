@@ -15,6 +15,16 @@ module GitApi
     #  Higher Level Git
     #--------------------------------------------------------
     
+    # Get basic repo information
+    #
+    # :repo      - The String name of the repo (including .git)
+    #
+    # Returns a JSON string of the created repo
+    get '/repos/:repo' do
+      repo = get_repo(File.join(settings.git_path, params[:repo]))
+      repo_to_hash(repo).to_json
+    end
+    
     # Create a new bare Git repository.
     #
     # name  - The String name of the repository. The ".git" extension will be added if not provided
@@ -30,8 +40,8 @@ module GitApi
 
     # Get a list of all files in the branch root folder.
     #
-    # repo      - The String name of the repo (including .git)
-    # branch    - The String name of the branch (e.g. "master")
+    # :repo      - The String name of the repo (including .git)
+    # :branch    - The String name of the branch (e.g. "master")
     #
     # Returns a JSON string containing and array of all files in branch, plus sha of the tree
     get '/repos/:repo/branches/:branch/files' do
@@ -42,26 +52,26 @@ module GitApi
     
     # Get file (if file is specified) or array of files (if folder is specified) in branch
     #
-    # repo      - The String name of the repo (including .git)
-    # branch    - The String name of the branch (e.g. "master")
-    # name      - The String name of the file or folder. Can be path in a subfolder (e.g. "images/thumbs/myfile.jpg")
+    # :repo     - The String name of the repo (including .git)
+    # :branch   - The String name of the branch (e.g. "master")
+    # :*        - The String name of the file or folder. Can be path in a subfolder (e.g. "images/thumbs/myfile.jpg")
     #
-    # Returns a JSON string containing file content or an array of file contents
+    # Returns a JSON string containing file content or an array of file names
     get '/repos/:repo/branches/:branch/files/*' do
       repo = get_repo(File.join(settings.git_path, params[:repo]))
-      blob = get_file_from_tree(repo, params[:branch], params[:splat].first)
-      if(blob.is_a?(Grit::Tree))  
-        tree_to_hash(blob).to_json
+      gitobject = get_object_from_tree(repo, params[:branch], params[:splat].first)
+      if(gitobject.is_a?(Grit::Tree))  
+        tree_to_hash(gitobject).to_json
       else
-        blob_to_hash(blob).to_json
+        blob_to_hash(gitobject).to_json
       end
     end
     
     # Commit a new file and its contents to specified branch. This methods loads all current files in specified branch into index
     # before committing the new file.
     #
-    # repo      - The String name of the repo (including .git)
-    # branch    - The String name of the branch (e.g. "master")
+    # :repo     - The String name of the repo (including .git)
+    # :branch   - The String name of the branch (e.g. "master")
     # name      - The String name of the file.
     # contents  - The String contents of the file
     # encoding  - The String encoding of the contents ("utf-8" or "base64")
@@ -78,8 +88,8 @@ module GitApi
     # Commit an update to a file and its contents to specified branch. This methods loads all current files in specified branch into index
     # before committing the new file. This is exactly the same as the equal POST route
     #
-    # repo      - The String name of the repo (including .git)
-    # branch    - The String name of the branch (e.g. "master")
+    # :repo     - The String name of the repo (including .git)
+    # :branch   - The String name of the branch (e.g. "master")
     # name      - The String name of the file.
     # contents  - The String contents of the file
     # encoding  - The String encoding of the contents ("utf-8" or "base64")
@@ -95,7 +105,6 @@ module GitApi
     
     # TODO
     # make the create/update/delete file functions accept array of files
-    # GET   /repos/:repo - get repo information (with clone url if set in Sinatra)
     # PATCH /repos/:repo - edit repo (only name now)
     # GET   /repos/:repo/branches - list all branches
     # POST  /repos/:repo/branches - create branch

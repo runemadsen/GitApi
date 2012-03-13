@@ -16,10 +16,10 @@ module GitApi
       blob
     end
     
-    def get_file_from_tree(repo, tree, name)
-      blob = repo.tree(tree)/name
-      throw(:halt, [404, "Blob Not Found"]) if blob.nil?
-      blob
+    def get_object_from_tree(repo, tree, name)
+      gitobject = repo.tree(tree)/name
+      throw(:halt, [404, "Blob Not Found"]) if gitobject.nil?
+      gitobject
     end
     
     def make_file(repo, branch, name, contents, encoding, user, email, message)

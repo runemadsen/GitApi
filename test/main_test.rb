@@ -21,9 +21,16 @@ class GitApiTest < Test::Unit::TestCase
     File.join(GIT_PATH, GIT_REPO+".git")
   end
   
-  # Repo creation
+  # Repo
   # ------------------------------------------------------------------
-
+  
+  def test_get_repo
+    post '/repos', {:name => GIT_REPO}
+    get "/repos/#{GIT_REPO}.git"
+    assert_equal({ :path => path}.to_json, last_response.body)
+    FileUtils.rm_rf path
+  end
+  
   def test_create_repo_without_extension
     post '/repos', {:name => GIT_REPO}
     assert last_response.ok?
