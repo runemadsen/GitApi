@@ -37,13 +37,24 @@ module GitApi
       #`mv #{git_repo}/hooks/post-update.sample #{git_repo}/hooks/post-update`
       repo_to_hash(repo).to_json
     end
+    
+    # Get a list of all branches in repo.
+    #
+    # :repo      - The String name of the repo (including .git)
+    #
+    # Returns a JSON string containing an array of all branches in repo
+    get '/repos/:repo/branches' do
+      repo = get_repo(File.join(settings.git_path, params[:repo]))
+      heads = repo.heads
+      heads.map { |head| head_to_hash(head) }.to_json
+    end
 
     # Get a list of all files in the branch root folder.
     #
     # :repo      - The String name of the repo (including .git)
     # :branch    - The String name of the branch (e.g. "master")
     #
-    # Returns a JSON string containing and array of all files in branch, plus sha of the tree
+    # Returns a JSON string containing an array of all files in branch, plus sha of the tree
     get '/repos/:repo/branches/:branch/files' do
       repo = get_repo(File.join(settings.git_path, params[:repo]))
       tree = repo.tree(params[:branch])
@@ -67,21 +78,22 @@ module GitApi
       end
     end
     
-    # Commit a new file and its contents to specified branch. This methods loads all current files in specified branch into index
+    # Commit a new file and its contents to specified branch. This methods loads all current files in specified branch (or from_branch) into index
     # before committing the new file.
     #
-    # :repo     - The String name of the repo (including .git)
-    # :branch   - The String name of the branch (e.g. "master")
-    # name      - The String name of the file.
-    # contents  - The String contents of the file
-    # encoding  - The String encoding of the contents ("utf-8" or "base64")
-    # user      - The String name of the commit user
-    # email     - The String email of the commit user
-    # message   - The String commit message
+    # :repo       - The String name of the repo (including .git)
+    # :branch     - The String name of the branch (e.g. "master")
+    # name        - The String name of the file.
+    # contents    - The String contents of the file
+    # encoding    - The String encoding of the contents ("utf-8" or "base64")
+    # user        - The String name of the commit user
+    # email       - The String email of the commit user
+    # message     - The String commit message
+    # from_branch - (Optional) The String of a specific branch whose tree should be loaded into index before committing. Use if creating a new branch.
     #
     # Returns a JSON string containing sha of the commit
     post '/repos/:repo/branches/:branch/files' do
-      sha = make_file(params[:repo], params[:branch], params[:name], params[:contents], params[:encoding], params[:user], params[:email], params[:message])
+      sha = make_file(params[:repo], params[:branch], params[:name], params[:contents], params[:encoding], params[:user], params[:email], params[:message], params[:from_branch])
       { :commit_sha => sha }.to_json
     end
     
@@ -106,7 +118,6 @@ module GitApi
     # TODO
     # make the create/update/delete file functions accept array of files
     # PATCH /repos/:repo - edit repo (only name now)
-    # GET   /repos/:repo/branches - list all branches
     # POST  /repos/:repo/branches - create branch
     
     #  Lower Level Git

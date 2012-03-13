@@ -45,6 +45,50 @@ class GitApiTest < Test::Unit::TestCase
     FileUtils.rm_rf path
   end
   
+  # Branches
+  # ------------------------------------------------------------------
+  
+  def test_list_branches
+    post '/repos', {:name => GIT_REPO}
+    post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :contents => "Hello There", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
+    post "/repos/#{GIT_REPO}.git/branches/another/files", {:name => "myfile.txt", :contents => "Hello There", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My Second Commit"}
+    get "/repos/#{GIT_REPO}.git/branches"
+    assert last_response.ok?
+    json = JSON.parse(last_response.body)
+    assert_equal(json.size, 2)
+    assert last_response.body.include?("commit_sha")
+    FileUtils.rm_rf path
+  end
+  
+  def test_create_clean_branch
+    post '/repos', {:name => GIT_REPO}
+    post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "masterfile.txt", :contents => "Hello There", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
+    post "/repos/#{GIT_REPO}.git/branches/slave/files", {:name => "slavefile.txt", :contents => "Hello There", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My Second Commit"}
+    get "/repos/#{GIT_REPO}.git/branches/master/files"
+    json = JSON.parse(last_response.body)
+    assert_equal(json["files"].size, 1)
+    assert_equal(json["files"][0]["name"], "masterfile.txt")
+    get "/repos/#{GIT_REPO}.git/branches/slave/files"
+    json = JSON.parse(last_response.body)
+    assert_equal(json["files"].size, 1)
+    assert_equal(json["files"][0]["name"], "slavefile.txt")
+    FileUtils.rm_rf path
+  end
+  
+  def test_create_filled_branch
+    post '/repos', {:name => GIT_REPO}
+    post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "masterfile.txt", :contents => "Hello There", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
+    post "/repos/#{GIT_REPO}.git/branches/slave/files", {:name => "slavefile.txt", :contents => "Hello There", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My Second Commit", :from_branch => "master"}
+    get "/repos/#{GIT_REPO}.git/branches/master/files"
+    json = JSON.parse(last_response.body)
+    assert_equal(json["files"].size, 1)
+    assert_equal(json["files"][0]["name"], "masterfile.txt")
+    get "/repos/#{GIT_REPO}.git/branches/slave/files"
+    json = JSON.parse(last_response.body)
+    assert_equal(json["files"].size, 2)
+    FileUtils.rm_rf path
+  end
+  
   # Files
   # ------------------------------------------------------------------
   

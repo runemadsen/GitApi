@@ -22,10 +22,10 @@ module GitApi
       gitobject
     end
     
-    def make_file(repo, branch, name, contents, encoding, user, email, message)
+    def make_file(repo, branch, name, contents, encoding, user, email, message, from_branch = nil)
       repo = get_repo(File.join(settings.git_path, repo))
       index = Grit::Index.new(repo)
-      index.read_tree(branch)
+      index.read_tree(from_branch || branch)
       index.add(name, contents)
       sha = index.commit(message, repo.commit_count > 0 ? [repo.commit(branch)] : nil, Grit::Actor.new(user, email), nil, branch)
     end
@@ -51,7 +51,12 @@ module GitApi
       }
     end
     
-    
+    def head_to_hash(head)
+      {
+        :name => head.name,
+        :commit_sha => head.commit.id
+      }
+    end
     
   end
 end
