@@ -1,0 +1,14 @@
+# TODO
+# make tests that give wrong params to all the functions
+# make the create/update/delete file functions accept array of files
+# make api calls that makes tag + tag ref at the same time
+# PATCH /repos/:repo - edit repo (only name now)
+# POST  /repos/:repo/branches - create branch
+# POST  /repos/:repo/blobs
+# GET   /repos/:repo/commits/:sha
+# POST  /repos/:repo/commits
+# GET   /repos/:repo/refs/:ref
+# PATCH /repos/:repo/refs/:ref
+# GET   /repos/:repo/tags/:sha
+# GET   /repos/:repo/trees/:sha
+# POST  /repos/:repo/trees

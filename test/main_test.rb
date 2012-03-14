@@ -237,6 +237,7 @@ class GitApiTest < Test::Unit::TestCase
     FileUtils.rm_rf path
   end
   
+  # currently doesn't work as there is no way to create refs that are not refs/head in grit
   # def test_get_tags
   #     post '/repos', {:name => GIT_REPO}
   #     post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :contents => "Hello There", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}

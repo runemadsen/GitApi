@@ -115,11 +115,6 @@ module GitApi
       { :commit_sha => sha }.to_json
     end
     
-    # TODO
-    # make the create/update/delete file functions accept array of files
-    # PATCH /repos/:repo - edit repo (only name now)
-    # POST  /repos/:repo/branches - create branch
-    
     #  Blobs
     #--------------------------------------------------------
     
@@ -164,7 +159,7 @@ module GitApi
     #  Tags
     #--------------------------------------------------------
     
-    # Get all tags in repo
+    # Get all tags in repo. This does not return lightweight tags (tags without a ref)
     #
     # repo      - The String name of the repo (including .git)
     #
@@ -195,19 +190,6 @@ module GitApi
       actor = Grit::Actor.new(params[:user], params[:email])
       Grit::Tag.create_tag_object(repo, params, actor).to_json
     end
-    
-    # TODO
-    # make tests that give wrong params to all the functions
-    # POST  /repos/:repo/blobs
-    # GET   /repos/:repo/commits/:sha
-    # POST  /repos/:repo/commits
-    # POST  /repos/:repo/refs
-    # GET   /repos/:repo/refs/:ref
-    # PATCH /repos/:repo/refs/:ref
-    # GET   /repos/:repo/tags/:sha
-    # GET   /repos/:repo/tags
-    # GET   /repos/:repo/trees/:sha
-    # POST  /repos/:repo/trees
     
   end
   
