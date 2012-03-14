@@ -120,7 +120,7 @@ module GitApi
     # PATCH /repos/:repo - edit repo (only name now)
     # POST  /repos/:repo/branches - create branch
     
-    #  Lower Level Git
+    #  Blobs
     #--------------------------------------------------------
     
     # Get blob data from blob sha
@@ -135,16 +135,76 @@ module GitApi
       blob_to_hash(blob).to_json  
     end
     
+    #  Refs
+    #--------------------------------------------------------
+    
+    # Get all references in repo
+    #
+    # repo      - The String name of the repo (including .git)
+    #
+    # Returns a JSON string containing an array of all references
+    get '/repos/:repo/refs' do
+      repo = get_repo(File.join(settings.git_path, params[:repo]))
+      repo.refs_list.map { |ref| ref_to_hash(ref) }.to_json
+    end
+    
+    # Create a new reference
+    #
+    # repo  - The String name of the repo (including .git)
+    # ref   - The String name of the ref (can currently only create refs/heads, e.g. "master")
+    # sha   - String of the SHA to set this reference to  
+    #
+    # Returns a JSON string containing an array of all references
+    post '/repos/:repo/refs' do
+      repo = get_repo(File.join(settings.git_path, params[:repo]))
+      sha = repo.update_ref(params[:ref], params[:sha])
+      { :commit_sha => sha }.to_json
+    end
+    
+    #  Tags
+    #--------------------------------------------------------
+    
+    # Get all tags in repo
+    #
+    # repo      - The String name of the repo (including .git)
+    #
+    # Returns a JSON string containing an array of all references
+    get '/repos/:repo/tags' do
+      repo = get_repo(File.join(settings.git_path, params[:repo]))
+      puts repo.tags.inspect
+      repo.tags.map { |tag| tag_to_hash(head) }.to_json
+    end
+    
+    # Create new tag in repo. Note that creating a tag object does not create the reference that makes a tag in Git. 
+    # If you want to create an annotated tag in Git, you have to do this call to create the tag object, and then 
+    # create the refs/tags/[tag] reference. If you want to create a lightweight tag, you simply have to create 
+    # the reference - this call would be unnecessary.
+    #
+    # repo      - The String name of the repo (including .git)
+    # tag       - The String name of the tag
+    # message   - The String tag message
+    # sha       - The String sha of the object being tagged (usually a commit sha, but could be a tree or a blob sha)
+    # type      - The String type of the object being tagged (usually "commit", but could be "tree" or "blob")
+    # user      - The String name of the commit user
+    # email     - The String email of the commit user
+    # 
+    #
+    # Returns a JSON string containing the contents of blob
+    post '/repos/:repo/tags' do
+      repo = get_repo(File.join(settings.git_path, params[:repo]))
+      actor = Grit::Actor.new(params[:user], params[:email])
+      Grit::Tag.create_tag_object(repo, params, actor).to_json
+    end
+    
     # TODO
+    # make tests that give wrong params to all the functions
     # POST  /repos/:repo/blobs
     # GET   /repos/:repo/commits/:sha
     # POST  /repos/:repo/commits
-    # GET   /repos/:repo/refs
     # POST  /repos/:repo/refs
     # GET   /repos/:repo/refs/:ref
     # PATCH /repos/:repo/refs/:ref
     # GET   /repos/:repo/tags/:sha
-    # POST  /repos/:repo/tags
     # GET   /repos/:repo/tags
     # GET   /repos/:repo/trees/:sha
     # POST  /repos/:repo/trees

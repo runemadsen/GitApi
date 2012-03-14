@@ -184,7 +184,7 @@ class GitApiTest < Test::Unit::TestCase
     FileUtils.rm_rf path
   end
   
-  # Lower level
+  # Blobs
   # ------------------------------------------------------------------
   
   def test_get_blob
@@ -197,5 +197,53 @@ class GitApiTest < Test::Unit::TestCase
     assert_equal(json["contents"], "Hello There")
     FileUtils.rm_rf path
   end
+  
+  # Refs
+  # ------------------------------------------------------------------
+  
+  def test_get_refs
+    post '/repos', {:name => GIT_REPO}
+    post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :contents => "Hello There", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
+    get "/repos/#{GIT_REPO}.git/refs"
+    assert last_response.ok?
+    json = JSON.parse(last_response.body)
+    assert_equal(json.size, 1)
+    assert_equal(json[0]["ref"], "refs/heads/master")
+    FileUtils.rm_rf path
+  end
+  
+  def test_create_ref
+    post '/repos', {:name => GIT_REPO}
+    post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :contents => "Hello There", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
+    sha = JSON.parse(last_response.body)["commit_sha"]
+    post "/repos/#{GIT_REPO}.git/refs", {:ref => "rune", :sha => sha}
+    assert last_response.ok?
+    json = JSON.parse(last_response.body)
+    assert last_response.body.include?("sha")
+    FileUtils.rm_rf path
+  end
+  
+  # Tags
+  # ------------------------------------------------------------------
+  
+  def test_create_tag
+    post '/repos', {:name => GIT_REPO}
+    post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :contents => "Hello There", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
+    sha = JSON.parse(last_response.body)["commit_sha"]
+    post "/repos/#{GIT_REPO}.git/tags", {:tag => "version1", :message => "hello", :sha => sha, :type => "commit", :user => "Rune Madsen", :email => "rune@runemadsen.com"}
+    assert last_response.ok?
+    json = JSON.parse(last_response.body)
+    assert last_response.body.include?("sha")
+    FileUtils.rm_rf path
+  end
+  
+  # def test_get_tags
+  #     post '/repos', {:name => GIT_REPO}
+  #     post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :contents => "Hello There", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
+  #     sha = JSON.parse(last_response.body)["commit_sha"]
+  #     post "/repos/#{GIT_REPO}.git/tags", {:tag => "version1", :message => "hello", :sha => sha, :type => "commit", :user => "Rune Madsen", :email => "rune@runemadsen.com"}
+  #     get "/repos/#{GIT_REPO}.git/tags"
+  #     FileUtils.rm_rf path
+  #   end
   
 end

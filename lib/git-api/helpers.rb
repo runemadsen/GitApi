@@ -58,5 +58,17 @@ module GitApi
       }
     end
     
+    def ref_to_hash(ref)
+      {
+        :ref => ref[0],
+        :sha => ref[1],
+        :type => ref[2]
+      }
+    end
+    
+    def tag_to_hash(tag)
+      
+    end
+    
   end
 end

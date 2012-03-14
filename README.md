@@ -6,3 +6,5 @@ The GitApi is a gem that makes it easy to provide RESTful API access to Git repo
 The API provides both lower-level read/write access to the Git objects (Blobs, Trees, Commits, Refs, Tags, etc) and a series of higher-level routes that combines actions that otherwise would take too many API calls to do (update file in specific branch, etc).
 
 The gem is meant to live alongside the Grack gem created by @schacon. Grack can expose your git repositories via the git-protocol in a pure Ruby implementation, and GitApi makes it possible to interact with these repositories over HTTP (no need for cloning and pushing repos from your app code).
+
+The gem currently relies on the grit code on Github, as they have not recently released a version on Rubygems.
