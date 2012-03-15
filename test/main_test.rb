@@ -126,7 +126,9 @@ class GitApiTest < Test::Unit::TestCase
   def test_delete_file
     post '/repos', {:name => GIT_REPO}
     post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :data => "Hello There", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
-    delete "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
+    blob = Grit::Repo.new(path).tree("master")/"myfile.txt"
+    assert !blob.nil?
+    delete "/repos/#{GIT_REPO}.git/branches/master/files/myfile.txt", {:user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
     blob = Grit::Repo.new(path).tree("master")/"myfile.txt"
     assert blob.nil?
     FileUtils.rm_rf path

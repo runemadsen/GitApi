@@ -84,7 +84,7 @@ module GitApi
     # :repo       - The String name of the repo (including .git)
     # :branch     - The String name of the branch (e.g. "master")
     # name        - The String name of the file (can be a path in folder)
-    # data    - The String data of the file
+    # data        - The String data of the file
     # encoding    - The String encoding of the data ("utf-8" or "base64")
     # user        - The String name of the commit user
     # email       - The String email of the commit user
@@ -102,17 +102,17 @@ module GitApi
     #
     # :repo     - The String name of the repo (including .git)
     # :branch   - The String name of the branch (e.g. "master")
-    # name      - The String name of the file.
+    # :*        - The String name of the file or folder. Can be path in a subfolder (e.g. "images/thumbs/myfile.jpg")
     # user      - The String name of the commit user
     # email     - The String email of the commit user
     # message   - The String commit message
     #
     # Returns a JSON string containing sha of the commit
-    delete '/repos/:repo/branches/:branch/files' do
+    delete '/repos/:repo/branches/:branch/files/*' do
       repo = get_repo(File.join(settings.git_path, params[:repo]))
       index = Grit::Index.new(repo)
       index.read_tree(params[:branch])
-      index.delete(params[:name])
+      index.delete(params[:splat].first)
       sha = index.commit(params[:message], [repo.commit(params[:branch])], Grit::Actor.new(params[:user], params[:email]), nil, params[:branch])
       commit_to_hash(sha).to_json
     end
@@ -123,7 +123,7 @@ module GitApi
     # :repo       - The String name of the repo (including .git)
     # :branch     - The String name of the branch (e.g. "master")
     # name        - The String name of the file (can be a path in folder)
-    # data    - The String data of the file
+    # data        - The String data of the file
     # encoding    - The String encoding of the data ("utf-8" or "base64")
     # user        - The String name of the commit user
     # email       - The String email of the commit user
