@@ -3,7 +3,7 @@
 # make the create/update/delete file functions accept array of files
 # make api calls that makes tag + tag ref at the same time
 # PATCH /repos/:repo - edit repo (only name now)
-# POST  /repos/:repo/branches - create branch
+# POST  /repos/:repo/branches - create branch from another branch
 # POST  /repos/:repo/blobs
 # GET   /repos/:repo/commits/:sha
 # POST  /repos/:repo/commits

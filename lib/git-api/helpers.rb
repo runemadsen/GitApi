@@ -22,11 +22,11 @@ module GitApi
       gitobject
     end
     
-    def make_file(repo, branch, name, contents, encoding, user, email, message, from_branch = nil)
+    def make_file(repo, branch, name, data, encoding, user, email, message, from_branch = nil)
       repo = get_repo(File.join(settings.git_path, repo))
       index = Grit::Index.new(repo)
       index.read_tree(from_branch || branch)
-      index.add(name, contents)
+      index.add(name, data)
       sha = index.commit(message, repo.commit_count > 0 ? [repo.commit(branch)] : nil, Grit::Actor.new(user, email), nil, branch)
     end
     
@@ -41,20 +41,22 @@ module GitApi
       files = tree.contents.map do |blob|
         blob.name
       end
-      { :files => files, :tree_sha => tree.id }
+      { :files => files, :sha => tree.id, :type => :tree }
     end
     
     def blob_to_hash(blob)
       { 
         :name => blob.name,
-        :contents => blob.data
+        :data => blob.data,
+        :type => :blob
       }
     end
     
     def head_to_hash(head)
       {
         :name => head.name,
-        :commit_sha => head.commit.id
+        :commit_sha => head.commit.id,
+        :type => :head
       }
     end
     
@@ -63,6 +65,13 @@ module GitApi
         :ref => ref[0],
         :sha => ref[1],
         :type => ref[2]
+      }
+    end
+    
+    def commit_to_hash(sha)
+      {
+        :sha => sha,
+        :type => :commit
       }
     end
     

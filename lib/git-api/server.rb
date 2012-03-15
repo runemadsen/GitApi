@@ -78,14 +78,14 @@ module GitApi
       end
     end
     
-    # Commit a new file and its contents to specified branch. This methods loads all current files in specified branch (or from_branch) into index
+    # Commit a new file and its data to specified branch. This methods loads all current files in specified branch (or from_branch) into index
     # before committing the new file.
     #
     # :repo       - The String name of the repo (including .git)
     # :branch     - The String name of the branch (e.g. "master")
-    # name        - The String name of the file.
-    # contents    - The String contents of the file
-    # encoding    - The String encoding of the contents ("utf-8" or "base64")
+    # name        - The String name of the file (can be a path in folder)
+    # data    - The String data of the file
+    # encoding    - The String encoding of the data ("utf-8" or "base64")
     # user        - The String name of the commit user
     # email       - The String email of the commit user
     # message     - The String commit message
@@ -93,26 +93,47 @@ module GitApi
     #
     # Returns a JSON string containing sha of the commit
     post '/repos/:repo/branches/:branch/files' do
-      sha = make_file(params[:repo], params[:branch], params[:name], params[:contents], params[:encoding], params[:user], params[:email], params[:message], params[:from_branch])
-      { :commit_sha => sha }.to_json
+      sha = make_file(params[:repo], params[:branch], params[:name], params[:data], params[:encoding], params[:user], params[:email], params[:message], params[:from_branch])
+      commit_to_hash(sha).to_json
     end
     
-    # Commit an update to a file and its contents to specified branch. This methods loads all current files in specified branch into index
-    # before committing the new file. This is exactly the same as the equal POST route
+    # Delete a file from the specified branch and commit the deletion. This methods loads all current files in specified branch into index
+    # before doing the deletion.
     #
     # :repo     - The String name of the repo (including .git)
     # :branch   - The String name of the branch (e.g. "master")
     # name      - The String name of the file.
-    # contents  - The String contents of the file
-    # encoding  - The String encoding of the contents ("utf-8" or "base64")
     # user      - The String name of the commit user
     # email     - The String email of the commit user
     # message   - The String commit message
     #
     # Returns a JSON string containing sha of the commit
-    put '/repos/:repo/branches/:branch/files' do
-      sha = make_file(params[:repo], params[:branch], params[:name], params[:contents], params[:encoding], params[:user], params[:email], params[:message])
-      { :commit_sha => sha }.to_json
+    delete '/repos/:repo/branches/:branch/files' do
+      repo = get_repo(File.join(settings.git_path, params[:repo]))
+      index = Grit::Index.new(repo)
+      index.read_tree(params[:branch])
+      index.delete(params[:name])
+      sha = index.commit(params[:message], [repo.commit(params[:branch])], Grit::Actor.new(params[:user], params[:email]), nil, params[:branch])
+      commit_to_hash(sha).to_json
+    end
+    
+    # Commit a new file and its data to specified branch. This methods loads all current files in specified branch (or from_branch) into index
+    # before committing the new file.
+    #
+    # :repo       - The String name of the repo (including .git)
+    # :branch     - The String name of the branch (e.g. "master")
+    # name        - The String name of the file (can be a path in folder)
+    # data    - The String data of the file
+    # encoding    - The String encoding of the data ("utf-8" or "base64")
+    # user        - The String name of the commit user
+    # email       - The String email of the commit user
+    # message     - The String commit message
+    # from_branch - (Optional) The String of a specific branch whose tree should be loaded into index before committing. Use if creating a new branch.
+    #
+    # Returns a JSON string containing sha of the commit
+    post '/repos/:repo/branches/:branch/files' do
+      sha = make_file(params[:repo], params[:branch], params[:name], params[:data], params[:encoding], params[:user], params[:email], params[:message], params[:from_branch])
+      commit_to_hash(sha).to_json
     end
     
     #  Blobs
@@ -123,7 +144,7 @@ module GitApi
     # repo      - The String name of the repo (including .git)
     # sha       - The String sha of the blob
     #
-    # Returns a JSON string containing the contents of blob
+    # Returns a JSON string containing the data of blob
     get '/repos/:repo/blobs/:sha' do
       repo = get_repo(File.join(settings.git_path, params[:repo]))
       blob = get_blob(repo, params[:sha])
@@ -153,7 +174,7 @@ module GitApi
     post '/repos/:repo/refs' do
       repo = get_repo(File.join(settings.git_path, params[:repo]))
       sha = repo.update_ref(params[:ref], params[:sha])
-      { :commit_sha => sha }.to_json
+      commit_to_hash(sha).to_json
     end
     
     #  Tags
@@ -184,12 +205,12 @@ module GitApi
     # email     - The String email of the commit user
     # 
     #
-    # Returns a JSON string containing the contents of blob
-    post '/repos/:repo/tags' do
-      repo = get_repo(File.join(settings.git_path, params[:repo]))
-      actor = Grit::Actor.new(params[:user], params[:email])
-      Grit::Tag.create_tag_object(repo, params, actor).to_json
-    end
+    # Returns a JSON string containing the data of blob
+    # post '/repos/:repo/tags' do
+    #       repo = get_repo(File.join(settings.git_path, params[:repo]))
+    #       actor = Grit::Actor.new(params[:user], params[:email])
+    #       Grit::Tag.create_tag_object(repo, params, actor).to_json
+    #     end
     
   end
   
