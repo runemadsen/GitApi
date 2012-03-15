@@ -39,7 +39,7 @@ module GitApi
     
     def tree_to_hash(tree)
       files = tree.contents.map do |blob|
-        { :name => blob.name }
+        blob.name
       end
       { :files => files, :tree_sha => tree.id }
     end
