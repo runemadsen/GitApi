@@ -67,11 +67,11 @@ class GitApiTest < Test::Unit::TestCase
     get "/repos/#{GIT_REPO}.git/branches/master/files"
     json = JSON.parse(last_response.body)
     assert_equal(json["files"].size, 1)
-    assert_equal(json["files"][0], "masterfile.txt")
+    assert_equal(json["files"][0]["name"], "masterfile.txt")
     get "/repos/#{GIT_REPO}.git/branches/slave/files"
     json = JSON.parse(last_response.body)
     assert_equal(json["files"].size, 1)
-    assert_equal(json["files"][0], "slavefile.txt")
+    assert_equal(json["files"][0]["name"], "slavefile.txt")
     FileUtils.rm_rf path
   end
   
@@ -82,7 +82,7 @@ class GitApiTest < Test::Unit::TestCase
     get "/repos/#{GIT_REPO}.git/branches/master/files"
     json = JSON.parse(last_response.body)
     assert_equal(json["files"].size, 1)
-    assert_equal(json["files"][0], "masterfile.txt")
+    assert_equal(json["files"][0]["name"], "masterfile.txt")
     get "/repos/#{GIT_REPO}.git/branches/slave/files"
     json = JSON.parse(last_response.body)
     assert_equal(json["files"].size, 2)
@@ -153,7 +153,8 @@ class GitApiTest < Test::Unit::TestCase
     assert last_response.ok?
     json = JSON.parse(last_response.body)
     assert_equal(json["files"].size, 2)
-    assert_equal(json["files"][0], "myfile.txt")
+    assert_equal(json["files"][0]["name"], "myfile.txt")
+    assert_equal(json["files"][0]["type"], "blob")
     FileUtils.rm_rf path
   end
   
@@ -174,7 +175,7 @@ class GitApiTest < Test::Unit::TestCase
     assert last_response.ok?
     json = JSON.parse(last_response.body)
     assert_equal(json["files"].size, 2)
-    assert_equal(json["files"][0], "myfile.txt")
+    assert_equal(json["files"][0]["name"], "myfile.txt")
     FileUtils.rm_rf path
   end
   

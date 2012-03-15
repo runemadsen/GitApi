@@ -38,8 +38,8 @@ module GitApi
     end
     
     def tree_to_hash(tree)
-      files = tree.contents.map do |blob|
-        blob.name
+      files = tree.contents.map do |object|
+        { :name => object.name, :type => object.class.name.downcase.split('::').last }
       end
       { :files => files, :sha => tree.id, :type => :tree }
     end
