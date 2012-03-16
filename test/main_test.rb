@@ -45,6 +45,17 @@ class GitApiTest < Test::Unit::TestCase
     FileUtils.rm_rf path
   end
   
+  def test_create_repo_with_hooks
+    post '/repos', {:name => GIT_REPO+".git", :hooks => ["post-update", "post-commit"]}
+    assert last_response.ok?
+    assert_equal({ :path => path}.to_json, last_response.body)
+    assert File.exist?(File.join(path, "hooks", "post-update"))
+    assert File.exist?(File.join(path, "hooks", "post-commit"))
+    assert !File.exist?(File.join(path, "hooks", "post-update.sample"))
+    assert !File.exist?(File.join(path, "hooks", "post-commit.sample"))
+    FileUtils.rm_rf path
+  end
+  
   # Branches
   # ------------------------------------------------------------------
   
@@ -238,25 +249,25 @@ class GitApiTest < Test::Unit::TestCase
   # Tags
   # ------------------------------------------------------------------
   
-  # def test_create_tag
-  #   post '/repos', {:name => GIT_REPO}
-  #   post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :data => "Hello There", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
-  #   sha = JSON.parse(last_response.body)["commit_sha"]
-  #   post "/repos/#{GIT_REPO}.git/tags", {:tag => "version1", :message => "hello", :sha => sha, :type => "commit", :user => "Rune Madsen", :email => "rune@runemadsen.com"}
-  #   assert last_response.ok?
-  #   json = JSON.parse(last_response.body)
-  #   assert last_response.body.include?("sha")
-  #   FileUtils.rm_rf path
-  # end
+  def test_create_tag
+    post '/repos', {:name => GIT_REPO}
+    post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :data => "Hello There", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
+    sha = JSON.parse(last_response.body)["commit_sha"]
+    post "/repos/#{GIT_REPO}.git/tags", {:tag => "version1", :message => "hello", :sha => sha, :type => "commit", :user => "Rune Madsen", :email => "rune@runemadsen.com"}
+    assert last_response.ok?
+    json = JSON.parse(last_response.body)
+    assert last_response.body.include?("sha")
+    FileUtils.rm_rf path
+  end
   
-  # currently doesn't work as there is no way to create refs that are not refs/head in grit
-  # def test_get_tags
-  #     post '/repos', {:name => GIT_REPO}
-  #     post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :data => "Hello There", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
-  #     sha = JSON.parse(last_response.body)["commit_sha"]
-  #     post "/repos/#{GIT_REPO}.git/tags", {:tag => "version1", :message => "hello", :sha => sha, :type => "commit", :user => "Rune Madsen", :email => "rune@runemadsen.com"}
-  #     get "/repos/#{GIT_REPO}.git/tags"
-  #     FileUtils.rm_rf path
-  #   end
+  # before making this test check something I need to be able to create a ref to this tag in Grit
+  def test_get_tags
+      post '/repos', {:name => GIT_REPO}
+      post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :data => "Hello There", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
+      sha = JSON.parse(last_response.body)["commit_sha"]
+      post "/repos/#{GIT_REPO}.git/tags", {:tag => "version1", :message => "hello", :sha => sha, :type => "commit", :user => "Rune Madsen", :email => "rune@runemadsen.com"}
+      get "/repos/#{GIT_REPO}.git/tags"
+      FileUtils.rm_rf path
+    end
   
 end

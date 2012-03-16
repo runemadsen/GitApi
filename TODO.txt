@@ -1,4 +1,5 @@
 # TODO
+# Use File.join for all routes, making sure double // gets caught
 # make tests that give wrong params to all the functions
 # make the create/update/delete file functions accept array of files
 # make api calls that makes tag + tag ref at the same time

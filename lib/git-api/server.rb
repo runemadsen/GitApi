@@ -15,7 +15,7 @@ module GitApi
     #  Higher Level Git
     #--------------------------------------------------------
     
-    # Get basic repo information
+    # Get basic repo information.
     #
     # :repo      - The String name of the repo (including .git)
     #
@@ -27,14 +27,15 @@ module GitApi
     
     # Create a new bare Git repository.
     #
-    # name  - The String name of the repository. The ".git" extension will be added if not provided
+    # name     - The String name of the repository. The ".git" extension will be added if not provided
+    # hooks[]  - The String array of hooks to enable when creating the repo (e.g. ["post-update", "post-receive"])
     #
     # Returns a JSON string of the created repo 
     post '/repos' do
       repo_name = params[:name]
       repo_name += ".git" unless repo_name =~ /\.git/
       repo = Grit::Repo.init_bare(File.join(settings.git_path, repo_name))
-      #`mv #{git_repo}/hooks/post-update.sample #{git_repo}/hooks/post-update`
+      enable_hooks(File.join(settings.git_path, repo_name), params[:hooks]) if params[:hooks]
       repo_to_hash(repo).to_json
     end
     
@@ -61,7 +62,7 @@ module GitApi
       tree_to_hash(tree).to_json
     end
     
-    # Get file (if file is specified) or array of files (if folder is specified) in branch
+    # Get file (if file is specified) or array of files (if folder is specified) in branch.
     #
     # :repo     - The String name of the repo (including .git)
     # :branch   - The String name of the branch (e.g. "master")
@@ -139,7 +140,7 @@ module GitApi
     #  Blobs
     #--------------------------------------------------------
     
-    # Get blob data from blob sha
+    # Get blob data from blob sha.
     #
     # repo      - The String name of the repo (including .git)
     # sha       - The String sha of the blob
@@ -154,7 +155,7 @@ module GitApi
     #  Refs
     #--------------------------------------------------------
     
-    # Get all references in repo
+    # Get all references in repo.
     #
     # repo      - The String name of the repo (including .git)
     #
@@ -164,7 +165,7 @@ module GitApi
       repo.refs_list.map { |ref| ref_to_hash(ref) }.to_json
     end
     
-    # Create a new reference
+    # Create a new reference.
     #
     # repo  - The String name of the repo (including .git)
     # ref   - The String name of the ref (can currently only create refs/heads, e.g. "master")
@@ -180,14 +181,13 @@ module GitApi
     #  Tags
     #--------------------------------------------------------
     
-    # Get all tags in repo. This does not return lightweight tags (tags without a ref)
+    # Get all tags in repo. This does not return lightweight tags (tags without a ref).
     #
     # repo      - The String name of the repo (including .git)
     #
     # Returns a JSON string containing an array of all references
     get '/repos/:repo/tags' do
       repo = get_repo(File.join(settings.git_path, params[:repo]))
-      puts repo.tags.inspect
       repo.tags.map { |tag| tag_to_hash(head) }.to_json
     end
     
@@ -206,11 +206,11 @@ module GitApi
     # 
     #
     # Returns a JSON string containing the data of blob
-    # post '/repos/:repo/tags' do
-    #       repo = get_repo(File.join(settings.git_path, params[:repo]))
-    #       actor = Grit::Actor.new(params[:user], params[:email])
-    #       Grit::Tag.create_tag_object(repo, params, actor).to_json
-    #     end
+    post '/repos/:repo/tags' do
+      repo = get_repo(File.join(settings.git_path, params[:repo]))
+      actor = Grit::Actor.new(params[:user], params[:email])
+      Grit::Tag.create_tag_object(repo, params, actor).to_json
+    end
     
   end
   

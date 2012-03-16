@@ -30,6 +30,12 @@ module GitApi
       sha = index.commit(message, repo.commit_count > 0 ? [repo.commit(branch)] : nil, Grit::Actor.new(user, email), nil, branch)
     end
     
+    def enable_hooks(repo, hooks)
+      hooks.each do |hook|
+        `mv #{repo}/hooks/#{hook}.sample #{repo}/hooks/#{hook}`
+      end
+    end
+    
     # Object to Hash conversion
     # ---------------------------------------------------
     
