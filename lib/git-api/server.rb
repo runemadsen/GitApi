@@ -67,6 +67,7 @@ module GitApi
     # :repo     - The String name of the repo (including .git)
     # :branch   - The String name of the branch (e.g. "master")
     # :*        - The String name of the file or folder. Can be path in a subfolder (e.g. "images/thumbs/myfile.jpg")
+    # encoding  - If a single blob is returned, this encoding is used for the blob data (defaults to utf-8)
     #
     # Returns a JSON string containing file content or an array of file names
     get '/repos/:repo/branches/:branch/files/*' do
@@ -75,7 +76,8 @@ module GitApi
       if(gitobject.is_a?(Grit::Tree))  
         tree_to_hash(gitobject).to_json
       else
-        blob_to_hash(gitobject).to_json
+        encoding = params[:encoding] || "utf-8"
+        blob_to_hash(gitobject, encoding).to_json
       end
     end
     

@@ -50,10 +50,10 @@ module GitApi
       { :files => files, :sha => tree.id, :type => :tree }
     end
     
-    def blob_to_hash(blob)
+    def blob_to_hash(blob, encoding = "utf-8")
       { 
         :name => blob.name,
-        :data => blob.data,
+        :data => blob.data.force_encoding("utf-8"),
         :type => :blob
       }
     end
