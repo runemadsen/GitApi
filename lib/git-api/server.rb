@@ -214,6 +214,22 @@ module GitApi
       Grit::Tag.create_tag_object(repo, params, actor).to_json
     end
     
+    #  Blame
+    #--------------------------------------------------------
+    
+    # Get blame for a specific file in the repo
+    #
+    # repo      - The String name of the repo (including .git)
+    # :branch   - The String name of the branch (e.g. "master")
+    # :*        - The String name of the file. Can be path in a subfolder (e.g. "subfolder/myfile.txt")
+    #
+    # Returns a JSON string containing an array of all references
+    get '/repos/:repo/blame/*' do
+      repo = get_repo(File.join(settings.git_path, params[:repo]))
+      puts repo.blame(params[:splat].first).inspect
+      #repo.blame
+    end
+    
   end
   
 end

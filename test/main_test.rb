@@ -262,12 +262,23 @@ class GitApiTest < Test::Unit::TestCase
   
   # before making this test check something I need to be able to create a ref to this tag in Grit
   def test_get_tags
-      post '/repos', {:name => GIT_REPO}
-      post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :data => "Hello There", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
-      sha = JSON.parse(last_response.body)["commit_sha"]
-      post "/repos/#{GIT_REPO}.git/tags", {:tag => "version1", :message => "hello", :sha => sha, :type => "commit", :user => "Rune Madsen", :email => "rune@runemadsen.com"}
-      get "/repos/#{GIT_REPO}.git/tags"
-      FileUtils.rm_rf path
-    end
+    post '/repos', {:name => GIT_REPO}
+    post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :data => "Hello There", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
+    sha = JSON.parse(last_response.body)["commit_sha"]
+    post "/repos/#{GIT_REPO}.git/tags", {:tag => "version1", :message => "hello", :sha => sha, :type => "commit", :user => "Rune Madsen", :email => "rune@runemadsen.com"}
+    get "/repos/#{GIT_REPO}.git/tags"
+    FileUtils.rm_rf path
+  end
+  
+  # Blame
+  # ------------------------------------------------------------------
+  
+  def test_get_blame
+    post '/repos', {:name => GIT_REPO}
+    post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :data => "Hello There", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
+    post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :data => "Hello Again", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
+    get "/repos/#{GIT_REPO}.git/blame/myfile.txt"
+    FileUtils.rm_rf path
+  end
   
 end

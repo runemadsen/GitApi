@@ -1,5 +1,7 @@
 # TODO
+# Use repo.lstree when getting contents of a tree - faster and easier to get recursive contents (if we don't need data in blobs)
 # Use File.join for all routes, making sure double // gets caught
+# Make all the routes that take :branch work with commit SHA's
 # make tests that give wrong params to all the functions
 # make the create/update/delete file functions accept array of files
 # make api calls that makes tag + tag ref at the same time
