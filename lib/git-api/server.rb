@@ -20,7 +20,7 @@ module GitApi
     # :repo      - The String name of the repo (including .git)
     #
     # Returns a JSON string of the created repo
-    get '/gitapi/v1/repos/:repo' do
+    get '/gitapi/repos/:repo' do
       repo = get_repo(File.join(settings.git_path, params[:repo]))
       repo_to_hash(repo).to_json
     end
@@ -31,7 +31,7 @@ module GitApi
     # hooks[]  - The String array of hooks to enable when creating the repo (e.g. ["post-update", "post-receive"])
     #
     # Returns a JSON string of the created repo 
-    post '/gitapi/v1/repos' do
+    post '/gitapi/repos' do
       repo_name = params[:name]
       repo_name += ".git" unless repo_name =~ /\.git/
       repo = Grit::Repo.init_bare(File.join(settings.git_path, repo_name))
@@ -44,7 +44,7 @@ module GitApi
     # :repo      - The String name of the repo (including .git)
     #
     # Returns a JSON string containing an array of all branches in repo
-    get '/gitapi/v1/repos/:repo/branches' do
+    get '/gitapi/repos/:repo/branches' do
       repo = get_repo(File.join(settings.git_path, params[:repo]))
       heads = repo.heads
       heads.map { |head| head_to_hash(head) }.to_json
@@ -56,7 +56,7 @@ module GitApi
     # :branch    - The String name of the branch (e.g. "master")
     #
     # Returns a JSON string containing an array of all files in branch, plus sha of the tree
-    get '/gitapi/v1/repos/:repo/branches/:branch/files' do
+    get '/gitapi/repos/:repo/branches/:branch/files' do
       repo = get_repo(File.join(settings.git_path, params[:repo]))
       tree = repo.tree(params[:branch])
       tree_to_hash(tree).to_json
@@ -70,7 +70,7 @@ module GitApi
     # encoding  - If a single blob is returned, this encoding is used for the blob data (defaults to utf-8)
     #
     # Returns a JSON string containing file content or an array of file names
-    get '/gitapi/v1/repos/:repo/branches/:branch/files/*' do
+    get '/gitapi/repos/:repo/branches/:branch/files/*' do
       repo = get_repo(File.join(settings.git_path, params[:repo]))
       gitobject = get_object_from_tree(repo, params[:branch], params[:splat].first)
       if(gitobject.is_a?(Grit::Tree))  
@@ -95,7 +95,7 @@ module GitApi
     # from_branch - (Optional) The String of a specific branch whose tree should be loaded into index before committing. Use if creating a new branch.
     #
     # Returns a JSON string containing sha of the commit
-    post '/gitapi/v1/repos/:repo/branches/:branch/files' do
+    post '/gitapi/repos/:repo/branches/:branch/files' do
       sha = make_file(params[:repo], params[:branch], params[:name], params[:data], params[:encoding], params[:user], params[:email], params[:message], params[:from_branch])
       commit_to_hash(sha).to_json
     end
@@ -111,7 +111,7 @@ module GitApi
     # message   - The String commit message
     #
     # Returns a JSON string containing sha of the commit
-    delete '/gitapi/v1/repos/:repo/branches/:branch/files/*' do
+    delete '/gitapi/repos/:repo/branches/:branch/files/*' do
       repo = get_repo(File.join(settings.git_path, params[:repo]))
       index = Grit::Index.new(repo)
       index.read_tree(params[:branch])
@@ -134,7 +134,7 @@ module GitApi
     # from_branch - (Optional) The String of a specific branch whose tree should be loaded into index before committing. Use if creating a new branch.
     #
     # Returns a JSON string containing sha of the commit
-    post '/gitapi/v1/repos/:repo/branches/:branch/files' do
+    post '/gitapi/repos/:repo/branches/:branch/files' do
       sha = make_file(params[:repo], params[:branch], params[:name], params[:data], params[:encoding], params[:user], params[:email], params[:message], params[:from_branch])
       commit_to_hash(sha).to_json
     end
@@ -148,7 +148,7 @@ module GitApi
     # sha       - The String sha of the blob
     #
     # Returns a JSON string containing the data of blob
-    get '/gitapi/v1/repos/:repo/blobs/:sha' do
+    get '/gitapi/repos/:repo/blobs/:sha' do
       repo = get_repo(File.join(settings.git_path, params[:repo]))
       blob = get_blob(repo, params[:sha])
       blob_to_hash(blob).to_json  
@@ -162,7 +162,7 @@ module GitApi
     # repo      - The String name of the repo (including .git)
     #
     # Returns a JSON string containing an array of all references
-    get '/gitapi/v1/repos/:repo/refs' do
+    get '/gitapi/repos/:repo/refs' do
       repo = get_repo(File.join(settings.git_path, params[:repo]))
       repo.refs_list.map { |ref| ref_to_hash(ref) }.to_json
     end
@@ -174,7 +174,7 @@ module GitApi
     # sha   - String of the SHA to set this reference to  
     #
     # Returns a JSON string containing an array of all references
-    post '/gitapi/v1/repos/:repo/refs' do
+    post '/gitapi/repos/:repo/refs' do
       repo = get_repo(File.join(settings.git_path, params[:repo]))
       sha = repo.update_ref(params[:ref], params[:sha])
       commit_to_hash(sha).to_json
@@ -188,7 +188,7 @@ module GitApi
     # repo      - The String name of the repo (including .git)
     #
     # Returns a JSON string containing an array of all references
-    get '/gitapi/v1/repos/:repo/tags' do
+    get '/gitapi/repos/:repo/tags' do
       repo = get_repo(File.join(settings.git_path, params[:repo]))
       repo.tags.map { |tag| tag_to_hash(head) }.to_json
     end
@@ -208,7 +208,7 @@ module GitApi
     # 
     #
     # Returns a JSON string containing the data of blob
-    post '/gitapi/v1/repos/:repo/tags' do
+    post '/gitapi/repos/:repo/tags' do
       repo = get_repo(File.join(settings.git_path, params[:repo]))
       actor = Grit::Actor.new(params[:user], params[:email])
       Grit::Tag.create_tag_object(repo, params, actor).to_json
@@ -224,7 +224,7 @@ module GitApi
     # :*        - The String name of the file. Can be path in a subfolder (e.g. "subfolder/myfile.txt")
     #
     # Returns a JSON string containing an array of all references
-    get '/gitapi/v1/repos/:repo/blame/*' do
+    get '/gitapi/repos/:repo/blame/*' do
       repo = get_repo(File.join(settings.git_path, params[:repo]))
       #repo.blame
     end
