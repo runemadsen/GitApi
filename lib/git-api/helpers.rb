@@ -27,7 +27,7 @@ module GitApi
       index = Grit::Index.new(repo)
       index.read_tree(from_branch || branch)
       index.add(name, data)
-      sha = index.commit(message, repo.commit_count > 0 ? [repo.commit(branch)] : nil, Grit::Actor.new(user, email), nil, branch)
+      sha = index.commit(message, repo.commit_count > 0 ? [repo.commit(from_branch || branch)] : nil, Grit::Actor.new(user, email), nil, branch)
     end
     
     def enable_hooks(repo, hooks)
@@ -89,8 +89,6 @@ module GitApi
       {
         :a_path => diff.a_path,
         :b_path => diff.b_path,
-        :a_blob => diff.a_blob,
-        :b_blob => diff.b_blob,
         :a_mode => diff.a_mode,
         :b_mode => diff.b_mode,
         :new_file => diff.new_file,

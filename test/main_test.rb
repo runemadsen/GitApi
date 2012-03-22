@@ -206,6 +206,17 @@ class GitApiTest < Test::Unit::TestCase
     FileUtils.rm_rf path
   end
   
+  def test_read_commits_branch
+    post '/gitapi/repos', {:name => GIT_REPO}
+    post "/gitapi/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :data => "Hello There", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
+    post "/gitapi/repos/#{GIT_REPO}.git/branches/slave/files", {:name => "myfile2.txt", :data => "Hello There Again", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My Second Commit", :from_branch => "master"}
+    get "/gitapi/repos/#{GIT_REPO}.git/commits", { :start => "slave" }
+    json = JSON.parse(last_response.body)
+    assert_equal(json.size, 2)
+    assert_equal(json[1]["message"], "My Second Commit")
+    FileUtils.rm_rf path
+  end
+  
   def test_read_commits_with_diffs
     post '/gitapi/repos', {:name => GIT_REPO}
     post "/gitapi/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :data => "Hello There", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
