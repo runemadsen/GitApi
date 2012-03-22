@@ -152,10 +152,12 @@ module GitApi
     #
     # Returns a JSON string containing an array of all commits
     get '/gitapi/repos/:repo/commits' do
-      puts "Getting commits: #{params.inspect}"
       repo = get_repo(File.join(settings.git_path, params[:repo]))
       commits = repo.commits(params[:start] || "master", params[:max_count] || 10, params[:skip] || 0)
-      commits = commits.map { |commit| commit.to_hash }
+      commits = commits.map { |commit| 
+        commit = commit.to_hash 
+        commit 
+      }
       if params[:diffs]
         commits = commits.map { |commit| 
           diffs = repo.commit_diff(commit["id"])
