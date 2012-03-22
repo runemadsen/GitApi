@@ -190,6 +190,32 @@ class GitApiTest < Test::Unit::TestCase
     FileUtils.rm_rf path
   end
   
+  # Commits
+  # ------------------------------------------------------------------
+  
+  def test_read_commits
+    post '/gitapi/repos', {:name => GIT_REPO}
+    post "/gitapi/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :data => "Hello There", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
+    post "/gitapi/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile2.txt", :data => "Hello There Again", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My Second Commit"}
+    get "/gitapi/repos/#{GIT_REPO}.git/commits"
+    json = JSON.parse(last_response.body)
+    assert_equal(json.size, 2)
+    assert_equal(json[0]["message"], "My First Commit")
+    assert_equal(json[1]["message"], "My Second Commit")
+    assert_equal(json[0]["diffs"], nil)
+    FileUtils.rm_rf path
+  end
+  
+  def test_read_commits_with_diffs
+    post '/gitapi/repos', {:name => GIT_REPO}
+    post "/gitapi/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :data => "Hello There", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
+    post "/gitapi/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile2.txt", :data => "Hello There Again", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My Second Commit"}
+    get "/gitapi/repos/#{GIT_REPO}.git/commits", { :diffs => true }
+    json = JSON.parse(last_response.body)
+    assert json[1]["diffs"].is_a?(Array)
+    FileUtils.rm_rf path
+  end
+  
   # Test 404's
   # All routes use shared function, so they should all behave the same
   # ------------------------------------------------------------------

@@ -139,6 +139,32 @@ module GitApi
       commit_to_hash(sha).to_json
     end
     
+    #  Commits
+    #--------------------------------------------------------
+    
+    # Get commits in repo
+    #
+    # :repo         - The String name of the repo (including .git)
+    # start         - The String branch name or commit sha of starting point (default: "master")
+    # max_count     - The Integer number of commits to return (default: 10)
+    # skip          - The Integer number of commits to skip. Can be used for pagination. (Default: 0)
+    # diffs         - If included, each commit will be returned with its diff output 
+    #
+    # Returns a JSON string containing an array of all commits
+    get '/gitapi/repos/:repo/commits' do
+      repo = get_repo(File.join(settings.git_path, params[:repo]))
+      commits = repo.commits(params[:start] || "master", params[:max_count] || 10, params[:skip] || 0)
+      commits = commits.map { |commit| commit.to_hash }
+      if params[:diffs]
+        commits = commits.map { |commit| 
+          diffs = repo.commit_diff(commit["id"])
+          commit["diffs"] = diffs.map { |diff| diff_to_hash(diff) }
+          commit
+        }
+      end
+      commits.to_json
+    end
+    
     #  Blobs
     #--------------------------------------------------------
     

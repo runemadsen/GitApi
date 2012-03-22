@@ -85,5 +85,21 @@ module GitApi
       
     end
     
+    def diff_to_hash(diff)
+      {
+        :a_path => diff.a_path,
+        :b_path => diff.b_path,
+        :a_blob => diff.a_blob,
+        :b_blob => diff.b_blob,
+        :a_mode => diff.a_mode,
+        :b_mode => diff.b_mode,
+        :new_file => diff.new_file,
+        :deleted_file => diff.deleted_file,
+        :renamed_file => diff.renamed_file,
+        :similarity_index => diff.similarity_index,
+        :diff => diff.diff
+      }
+    end
+    
   end
 end
