@@ -160,7 +160,6 @@ module GitApi
         if params[:diffs]
           commit_hash["diffs"] = commit.diffs.map { |diff| diff_to_hash(diff) }
         end
-        puts commit_hash.inspect
         commit_hash 
       }
       
