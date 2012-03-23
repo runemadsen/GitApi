@@ -154,17 +154,15 @@ module GitApi
     get '/gitapi/repos/:repo/commits' do
       repo = get_repo(File.join(settings.git_path, params[:repo]))
       commits = repo.commits(params[:start] || "master", params[:max_count] || 10, params[:skip] || 0)
+      
       commits = commits.map { |commit| 
-        commit = commit.to_hash 
-        commit 
+        commit_hash = commit.to_hash 
+        if params[:diffs]
+          commit_hash["diffs"] = commit.diffs.map { |diff| diff_to_hash(diff) }
+        end
+        commit_hash 
       }
-      if params[:diffs]
-        commits = commits.map { |commit| 
-          diffs = repo.commit_diff(commit["id"])
-          commit["diffs"] = diffs.map { |diff| diff_to_hash(diff) }
-          commit
-        }
-      end
+      
       commits.to_json
     end
     
