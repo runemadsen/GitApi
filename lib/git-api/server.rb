@@ -156,10 +156,11 @@ module GitApi
       commits = repo.commits(params[:start] || "master", params[:max_count] || 10, params[:skip] || 0)
       
       commits = commits.map { |commit| 
-        commit_hash = commit.to_hash 
+        commit_hash = commit_baked_to_hash(commit)
         if params[:diffs]
           commit_hash["diffs"] = commit.diffs.map { |diff| diff_to_hash(diff) }
         end
+        puts commit_hash.inspect
         commit_hash 
       }
       

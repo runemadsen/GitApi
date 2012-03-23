@@ -1,3 +1,5 @@
+require 'iconv'
+
 module GitApi
   module Helpers
     
@@ -81,6 +83,25 @@ module GitApi
       }
     end
     
+    def commit_baked_to_hash(commit)
+      {
+        :id => commit.id,
+        :parents => commit.parents.map { |p| { 'id' => p.id } },
+        :tree => commit.tree.id,
+        :message => commit.message.force_encoding("utf-8"),
+        :author => {
+          :name => commit.author.name.force_encoding("utf-8"),
+          :email => commit.author.email.force_encoding("utf-8")
+        },
+        :committer => {
+          :name => commit.committer.name.force_encoding("utf-8"),
+          :email => commit.committer.email.force_encoding("utf-8")
+        },
+        :authored_date => commit.authored_date.xmlschema,
+        :committed_date => commit.committed_date.xmlschema,
+      }
+    end
+    
     def tag_to_hash(tag)
       
     end
@@ -95,8 +116,13 @@ module GitApi
         :deleted_file => diff.deleted_file,
         :renamed_file => diff.renamed_file,
         :similarity_index => diff.similarity_index,
-        :diff => diff.diff.force_encoding("utf-8")
+        :diff => clean_utf8(diff.diff)
       }
+    end
+    
+    # TODO: This is a nasty hack around utf-8 encoding problems
+    def clean_utf8(s)
+      Iconv.new('UTF-8//IGNORE', 'UTF-8').iconv(s + ' ')[0..-2]
     end
     
   end
