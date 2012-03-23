@@ -53,7 +53,7 @@ module GitApi
     def blob_to_hash(blob, encoding = "utf-8")
       { 
         :name => blob.name,
-        :data => blob.data.force_encoding("utf-8"),
+        :data => blob.data.force_encoding(encoding),
         :type => :blob
       }
     end
@@ -95,7 +95,7 @@ module GitApi
         :deleted_file => diff.deleted_file,
         :renamed_file => diff.renamed_file,
         :similarity_index => diff.similarity_index,
-        :diff => diff.diff
+        :diff => diff.diff.force_encoding("utf-8")
       }
     end
     
