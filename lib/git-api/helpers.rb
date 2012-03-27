@@ -26,10 +26,14 @@ module GitApi
     
     def make_file(repo, branch, name, data, encoding, user, email, message, from_branch = nil)
       repo = get_repo(File.join(settings.git_path, repo))
+      puts "Repo: #{repo.inspect}"
       index = Grit::Index.new(repo)
+      puts "Index: #{index.inspect}"
+      puts "Using branch: #{from_branch || branch}"
       index.read_tree(from_branch || branch)
       index.add(name, data)
       sha = index.commit(message, repo.commit_count > 0 ? [repo.commit(from_branch || branch)] : nil, Grit::Actor.new(user, email), nil, branch)
+      puts "Sha is #{sha}"
     end
     
     def enable_hooks(repo, hooks)

@@ -116,9 +116,10 @@ class GitApiTest < Test::Unit::TestCase
   def test_update_file
     post '/repos', {:name => GIT_REPO}
     post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :data => "Hello There", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
+    post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :data => "Hello There Again", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
     blob = Grit::Repo.new(path).tree("master")/"myfile.txt"
     assert last_response.ok?
-    assert_equal(blob.data, "Hello There")
+    assert_equal(blob.data, "Hello There Again")
     assert last_response.body.include?("sha")
     FileUtils.rm_rf path
   end
@@ -316,6 +317,17 @@ class GitApiTest < Test::Unit::TestCase
     post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :data => "Hello Again", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
     get "/repos/#{GIT_REPO}.git/blame/myfile.txt"
     FileUtils.rm_rf path
+  end
+  
+  # Test git repo valid
+  # ------------------------------------------------------------------
+  
+  def test_repo_valid
+    post '/repos', {:name => GIT_REPO}
+    post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :data => "Hello There", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
+    post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :data => "Hello There Again", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
+    puts `git clone #{path} /tmp/test`
+    FileUtils.rm_rf "/tmp/test"
   end
   
 end
