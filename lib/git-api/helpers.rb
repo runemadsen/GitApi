@@ -88,14 +88,14 @@ module GitApi
         :id => commit.id,
         :parents => commit.parents.map { |p| { 'id' => p.id } },
         :tree => commit.tree.id,
-        :message => commit.message.force_encoding("utf-8"),
+        :message => commit.message,
         :author => {
-          :name => commit.author.name.force_encoding("utf-8"),
-          :email => commit.author.email.force_encoding("utf-8")
+          :name => commit.author.name,
+          :email => commit.author.email
         },
         :committer => {
-          :name => commit.committer.name.force_encoding("utf-8"),
-          :email => commit.committer.email.force_encoding("utf-8")
+          :name => commit.committer.name,
+          :email => commit.committer.email
         },
         :authored_date => commit.authored_date.xmlschema,
         :committed_date => commit.committed_date.xmlschema,
@@ -116,13 +116,12 @@ module GitApi
         :deleted_file => diff.deleted_file,
         :renamed_file => diff.renamed_file,
         :similarity_index => diff.similarity_index,
-        :diff => clean_utf8(diff.diff)
+        :diff => iconv_utf8(diff.diff)
       }
     end
     
-    # TODO: This is a nasty hack around utf-8 encoding problems
-    def clean_utf8(s)
-      Iconv.new('UTF-8//IGNORE', 'UTF-8').iconv(s + ' ')[0..-2]
+    def iconv_utf8(s)
+      Iconv.new('UTF-8//IGNORE', 'US-ASCII').iconv(s + ' ')[0..-2]
     end
     
   end
