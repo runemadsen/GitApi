@@ -88,7 +88,7 @@ module GitApi
         :id => commit.id,
         :parents => commit.parents.map { |p| { 'id' => p.id } },
         :tree => commit.tree.id,
-        :message => commit.message,
+        :message => iconv_utf8(commit.message),
         :author => {
           :name => commit.author.name,
           :email => commit.author.email
@@ -119,6 +119,9 @@ module GitApi
         :diff => iconv_utf8(diff.diff)
       }
     end
+    
+    # Because grit has not encoded its strings, all strings come out as binary. This function converts
+    # the binary string to utf-8.
     
     def iconv_utf8(s)
       Iconv.new('UTF-8//IGNORE', 'US-ASCII').iconv(s + ' ')[0..-2]
