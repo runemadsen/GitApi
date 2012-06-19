@@ -225,6 +225,18 @@ class GitApiTest < Test::Unit::TestCase
     get "/repos/#{GIT_REPO}.git/commits", { :diffs => true }
     json = JSON.parse(last_response.body)
     assert json[1]["diffs"].is_a?(Array)
+    assert !json[1]["diffs"].first["diff"].empty?
+    FileUtils.rm_rf path
+  end
+  
+  def test_read_commits_with_diffs_images
+    post '/repos', {:name => GIT_REPO}
+    post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myimage.jpg", :data => "YTM0NZomIzI2OTsmIzM0NTueYQ==", :encoding => "base64", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
+    post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myimage2.jpg", :data => "YTM0NZomIzI2OTsmIzM0NTueYQ==", :encoding => "base64", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My Second Commit"}
+    get "/repos/#{GIT_REPO}.git/commits", { :diffs => true }
+    json = JSON.parse(last_response.body)
+    assert json[1]["diffs"].is_a?(Array)
+    assert_equal("", json[1]["diffs"].first["diff"])
     FileUtils.rm_rf path
   end
   

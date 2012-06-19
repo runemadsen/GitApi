@@ -1,4 +1,5 @@
 require 'iconv'
+require 'linguist'
 
 module GitApi
   module Helpers
@@ -51,7 +52,7 @@ module GitApi
       end
       { :files => files, :sha => tree.id, :type => :tree }
     end
-    
+
     def blob_to_hash(blob, encoding = "utf-8")
       { 
         :name => blob.name,
@@ -107,6 +108,7 @@ module GitApi
     end
     
     def diff_to_hash(diff)
+      has_image = is_image?(diff.a_path) || is_image?(diff.b_path)
       {
         :a_path => diff.a_path,
         :b_path => diff.b_path,
@@ -116,7 +118,7 @@ module GitApi
         :deleted_file => diff.deleted_file,
         :renamed_file => diff.renamed_file,
         :similarity_index => diff.similarity_index,
-        :diff => iconv_utf8(diff.diff)
+        :diff => has_image ? "" : iconv_utf8(diff.diff)
       }
     end
     
@@ -125,6 +127,10 @@ module GitApi
     
     def iconv_utf8(s)
       Iconv.new('UTF-8//IGNORE', 'US-ASCII').iconv(s + ' ')[0..-2]
+    end
+    
+    def is_image?(filename)
+      Linguist::FileBlob.new(filename).image?
     end
     
   end

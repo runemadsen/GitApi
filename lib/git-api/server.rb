@@ -7,14 +7,11 @@ module GitApi
   class App < Sinatra::Base
     
     helpers Helpers
-    
+        
     before do
       content_type 'application/json'
     end
-    
-    #  Higher Level Git
-    #--------------------------------------------------------
-    
+      
     # Get basic repo information.
     #
     # :repo      - The String name of the repo (including .git)
@@ -220,6 +217,7 @@ module GitApi
       repo.tags.map { |tag| tag_to_hash(head) }.to_json
     end
     
+    # Solution: http://stackoverflow.com/questions/9731067/creating-tags-with-grit/10848703?iemail=1#10848703
     # Create new tag in repo. Note that creating a tag object does not create the reference that makes a tag in Git. 
     # If you want to create an annotated tag in Git, you have to do this call to create the tag object, and then 
     # create the refs/tags/[tag] reference. If you want to create a lightweight tag, you simply have to create 

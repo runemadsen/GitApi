@@ -1,7 +1,3 @@
-# TODO NOW
-# Use linguist to check if diff or content is binary. If it is, don't show it
-
-
 # TODO
 # When posting a file to a new branch and not specifying from_branch, then commits to that new branch equal 0 and not 1. 
 # Use repo.lstree when getting contents of a tree - faster and easier to get recursive contents (if we don't need data in blobs)
