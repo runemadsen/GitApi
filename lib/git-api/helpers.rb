@@ -108,7 +108,7 @@ module GitApi
     end
     
     def diff_to_hash(diff)
-      has_image = is_image?(diff.a_path) || is_image?(diff.b_path)
+      image_diff = is_image?(diff.a_path) || is_image?(diff.b_path)
       {
         :a_path => diff.a_path,
         :b_path => diff.b_path,
@@ -118,7 +118,7 @@ module GitApi
         :deleted_file => diff.deleted_file,
         :renamed_file => diff.renamed_file,
         :similarity_index => diff.similarity_index,
-        :diff => has_image ? "" : iconv_utf8(diff.diff)
+        :diff => image_diff ? "" : iconv_utf8(diff.diff)
       }
     end
     
