@@ -338,7 +338,9 @@ class GitApiTest < Test::Unit::TestCase
     post '/repos', {:name => GIT_REPO}
     post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :data => "Hello There", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
     post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :data => "Hello There Again", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
-    puts `git clone #{path} /tmp/test`
+    `git clone #{path} /tmp/test`
+    status = $?.to_i
+    assert_equal(0, status)
     FileUtils.rm_rf "/tmp/test"
   end
   

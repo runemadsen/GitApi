@@ -21,6 +21,7 @@ Gem::Specification.new do |s|
   # specify any dependencies here; for example:
   s.add_development_dependency "rack-test"
   s.add_runtime_dependency "json"
-  s.add_runtime_dependency "sinatra"
-  s.add_runtime_dependency "grit"
+  s.add_runtime_dependency "sinatra", "~> 1.3.2"
+  s.add_runtime_dependency "grit", "~> 2.5.0"
+  s.add_runtime_dependency "github-linguist", "~> 2.0.1"
 end
