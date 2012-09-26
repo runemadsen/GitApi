@@ -130,7 +130,7 @@ module GitApi
     end
     
     def is_image?(filename)
-      Linguist::FileBlob.new(filename).image?
+      Linguist::FileBlob.new(filename).binary?
     end
     
   end

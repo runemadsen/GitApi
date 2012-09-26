@@ -157,6 +157,16 @@ class GitApiTest < Test::Unit::TestCase
     FileUtils.rm_rf path
   end
   
+  def test_read_non_existing_file
+    post '/repos', {:name => GIT_REPO}
+    get "/repos/#{GIT_REPO}.git/branches/master/files/subfolder/myfile.txt"
+    assert last_response.ok?
+    json = JSON.parse(last_response.body)
+    assert_equal(json["name"], "myfile.txt")
+    assert_equal(json["data"], "Hello There")
+    FileUtils.rm_rf path
+  end
+  
   def test_read_files
     post '/repos', {:name => GIT_REPO}
     post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :data => "Hello There", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}

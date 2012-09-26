@@ -1,0 +1,48 @@
+>> Writing PID to tmp/pids/thin.pid
+>> Using rack adapter
+/usr/local/app/git-api/lib/git-api/helpers.rb:1:in `<top (required)>': iconv will be deprecated in the future, use String#encode instead.
+>> Thin web server (v1.4.1 codename Chromeo)
+>> Maximum connections set to 1024
+>> Listening on 0.0.0.0:9995, CTRL+C to stop
+>> Exiting!
+/home/vagrant/.rvm/gems/ruby-1.9.3-p194@git-api/gems/eventmachine-1.0.0/lib/eventmachine.rb:526:in `start_tcp_server': no acceptor (port is in use or requires root privileges) (RuntimeError)
+	from /home/vagrant/.rvm/gems/ruby-1.9.3-p194@git-api/gems/eventmachine-1.0.0/lib/eventmachine.rb:526:in `start_server'
+	from /home/vagrant/.rvm/gems/ruby-1.9.3-p194@git-api/gems/thin-1.4.1/lib/thin/backends/tcp_server.rb:16:in `connect'
+	from /home/vagrant/.rvm/gems/ruby-1.9.3-p194@git-api/gems/thin-1.4.1/lib/thin/backends/base.rb:55:in `block in start'
+	from /home/vagrant/.rvm/gems/ruby-1.9.3-p194@git-api/gems/eventmachine-1.0.0/lib/eventmachine.rb:187:in `call'
+	from /home/vagrant/.rvm/gems/ruby-1.9.3-p194@git-api/gems/eventmachine-1.0.0/lib/eventmachine.rb:187:in `run_machine'
+	from /home/vagrant/.rvm/gems/ruby-1.9.3-p194@git-api/gems/eventmachine-1.0.0/lib/eventmachine.rb:187:in `run'
+	from /home/vagrant/.rvm/gems/ruby-1.9.3-p194@git-api/gems/thin-1.4.1/lib/thin/backends/base.rb:63:in `start'
+	from /home/vagrant/.rvm/gems/ruby-1.9.3-p194@git-api/gems/thin-1.4.1/lib/thin/server.rb:159:in `start'
+	from /home/vagrant/.rvm/gems/ruby-1.9.3-p194@git-api/gems/thin-1.4.1/lib/thin/controllers/controller.rb:86:in `start'
+	from /home/vagrant/.rvm/gems/ruby-1.9.3-p194@git-api/gems/thin-1.4.1/lib/thin/runner.rb:185:in `run_command'
+	from /home/vagrant/.rvm/gems/ruby-1.9.3-p194@git-api/gems/thin-1.4.1/lib/thin/runner.rb:151:in `run!'
+	from /home/vagrant/.rvm/gems/ruby-1.9.3-p194@git-api/gems/thin-1.4.1/bin/thin:6:in `<top (required)>'
+	from /home/vagrant/.rvm/gems/ruby-1.9.3-p194@git-api/bin/thin:19:in `load'
+	from /home/vagrant/.rvm/gems/ruby-1.9.3-p194@git-api/bin/thin:19:in `<main>'
+	from /home/vagrant/.rvm/gems/ruby-1.9.3-p194@git-api/bin/ruby_noexec_wrapper:14:in `eval'
+	from /home/vagrant/.rvm/gems/ruby-1.9.3-p194@git-api/bin/ruby_noexec_wrapper:14:in `<main>'
+>> Writing PID to tmp/pids/thin.pid
+>> Using rack adapter
+/usr/local/app/git-api/lib/git-api/helpers.rb:1:in `<top (required)>': iconv will be deprecated in the future, use String#encode instead.
+>> Thin web server (v1.4.1 codename Chromeo)
+>> Maximum connections set to 1024
+>> Listening on 0.0.0.0:9995, CTRL+C to stop
+>> Writing PID to tmp/pids/thin.pid
+>> Using rack adapter
+/usr/local/app/git-api/lib/git-api/helpers.rb:1:in `<top (required)>': iconv will be deprecated in the future, use String#encode instead.
+>> Thin web server (v1.4.1 codename Chromeo)
+>> Maximum connections set to 1024
+>> Listening on 0.0.0.0:9995, CTRL+C to stop
+>> Writing PID to tmp/pids/thin.pid
+>> Using rack adapter
+/usr/local/app/git-api/lib/git-api/helpers.rb:1:in `<top (required)>': iconv will be deprecated in the future, use String#encode instead.
+>> Thin web server (v1.4.1 codename Chromeo)
+>> Maximum connections set to 1024
+>> Listening on 0.0.0.0:9995, CTRL+C to stop
+>> Writing PID to tmp/pids/thin.pid
+>> Using rack adapter
+/usr/local/app/git-api/lib/git-api/helpers.rb:1:in `<top (required)>': iconv will be deprecated in the future, use String#encode instead.
+>> Thin web server (v1.4.1 codename Chromeo)
+>> Maximum connections set to 1024
+>> Listening on 0.0.0.0:9995, CTRL+C to stop
