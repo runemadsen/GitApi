@@ -6,7 +6,7 @@ require 'git-api.rb'
 # Setup git api
 # --------------------------------------------------------
 
-GitApi::App.set :git_path => "/usr/local/app/repos"
+GitApi::App.set :git_path => "/vagrant/tmp/repos"
 map '/gitapi' do
   run GitApi::App
 end
