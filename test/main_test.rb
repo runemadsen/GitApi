@@ -1,13 +1,4 @@
-require 'git-api'
-require 'test/unit'
-require 'rack/test'
-require 'fileutils'
-require 'grit'
-require 'json'
-
-ENV['RACK_ENV'] = 'test'
-GIT_PATH = "/tmp/testrepos"
-GIT_REPO = "mytestrepo"
+require "#{File.dirname(__FILE__)}/test_helper"
 
 class GitApiTest < Test::Unit::TestCase
   include Rack::Test::Methods
@@ -20,6 +11,10 @@ class GitApiTest < Test::Unit::TestCase
   def path 
     File.join(GIT_PATH, GIT_REPO+".git")
   end
+
+  def teardown
+    FileUtils.rm_rf path
+  end
   
   # Repo
   # ------------------------------------------------------------------
@@ -28,32 +23,29 @@ class GitApiTest < Test::Unit::TestCase
     post '/repos', {:name => GIT_REPO}
     get "/repos/#{GIT_REPO}.git"
     assert_equal({ :path => path}.to_json, last_response.body)
-    FileUtils.rm_rf path
   end
   
   def test_create_repo_without_extension
     post '/repos', {:name => GIT_REPO}
     assert last_response.ok?
     assert_equal({ :path => path}.to_json, last_response.body)
-    FileUtils.rm_rf path
   end
   
   def test_create_repo_with_extension
     post '/repos', {:name => GIT_REPO+".git"}
     assert last_response.ok?
     assert_equal({ :path => path}.to_json, last_response.body)
-    FileUtils.rm_rf path
   end
   
   def test_create_repo_with_hooks
-    post '/repos', {:name => GIT_REPO+".git", :hooks => ["post-update", "post-commit"]}
+    post '/repos', {:name => GIT_REPO+".git", :hooks => ["post-update"]}
+    #post '/repos', {:name => GIT_REPO+".git", :hooks => ["post-update", "post-commit"]}
     assert last_response.ok?
     assert_equal({ :path => path}.to_json, last_response.body)
     assert File.exist?(File.join(path, "hooks", "post-update"))
-    assert File.exist?(File.join(path, "hooks", "post-commit"))
+    #assert File.exist?(File.join(path, "hooks", "post-commit"))
     assert !File.exist?(File.join(path, "hooks", "post-update.sample"))
     assert !File.exist?(File.join(path, "hooks", "post-commit.sample"))
-    FileUtils.rm_rf path
   end
   
   # Branches
@@ -68,7 +60,6 @@ class GitApiTest < Test::Unit::TestCase
     json = JSON.parse(last_response.body)
     assert_equal(json.size, 2)
     assert last_response.body.include?("sha")
-    FileUtils.rm_rf path
   end
   
   def test_create_clean_branch
@@ -83,7 +74,6 @@ class GitApiTest < Test::Unit::TestCase
     json = JSON.parse(last_response.body)
     assert_equal(json["files"].size, 1)
     assert_equal(json["files"][0]["name"], "slavefile.txt")
-    FileUtils.rm_rf path
   end
   
   def test_create_filled_branch
@@ -97,7 +87,6 @@ class GitApiTest < Test::Unit::TestCase
     get "/repos/#{GIT_REPO}.git/branches/slave/files"
     json = JSON.parse(last_response.body)
     assert_equal(json["files"].size, 2)
-    FileUtils.rm_rf path
   end
   
   # Files
@@ -110,7 +99,6 @@ class GitApiTest < Test::Unit::TestCase
     assert last_response.ok?
     assert_equal(blob.data, "Hello There")
     assert last_response.body.include?("sha")
-    FileUtils.rm_rf path
   end
   
   def test_update_file
@@ -121,7 +109,6 @@ class GitApiTest < Test::Unit::TestCase
     assert last_response.ok?
     assert_equal(blob.data, "Hello There Again")
     assert last_response.body.include?("sha")
-    FileUtils.rm_rf path
   end
   
   def test_read_file
@@ -132,7 +119,6 @@ class GitApiTest < Test::Unit::TestCase
     json = JSON.parse(last_response.body)
     assert_equal(json["name"], "myfile.txt")
     assert_equal(json["data"], "Hello There")
-    FileUtils.rm_rf path
   end
   
   def test_delete_file
@@ -143,7 +129,6 @@ class GitApiTest < Test::Unit::TestCase
     delete "/repos/#{GIT_REPO}.git/branches/master/files/myfile.txt", {:user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
     blob = Grit::Repo.new(path).tree("master")/"myfile.txt"
     assert blob.nil?
-    FileUtils.rm_rf path
   end
   
   def test_read_file_in_folder
@@ -154,17 +139,6 @@ class GitApiTest < Test::Unit::TestCase
     json = JSON.parse(last_response.body)
     assert_equal(json["name"], "myfile.txt")
     assert_equal(json["data"], "Hello There")
-    FileUtils.rm_rf path
-  end
-  
-  def test_read_non_existing_file
-    post '/repos', {:name => GIT_REPO}
-    get "/repos/#{GIT_REPO}.git/branches/master/files/subfolder/myfile.txt"
-    assert last_response.ok?
-    json = JSON.parse(last_response.body)
-    assert_equal(json["name"], "myfile.txt")
-    assert_equal(json["data"], "Hello There")
-    FileUtils.rm_rf path
   end
   
   def test_read_files
@@ -177,7 +151,6 @@ class GitApiTest < Test::Unit::TestCase
     assert_equal(json["files"].size, 2)
     assert_equal(json["files"][0]["name"], "myfile.txt")
     assert_equal(json["files"][0]["type"], "blob")
-    FileUtils.rm_rf path
   end
   
   def test_read_files_empty_branch
@@ -186,7 +159,6 @@ class GitApiTest < Test::Unit::TestCase
     assert last_response.ok?
     json = JSON.parse(last_response.body)
     assert_equal(json["files"].size, 0)
-    FileUtils.rm_rf path
   end
   
   def test_read_files_in_folder
@@ -198,7 +170,6 @@ class GitApiTest < Test::Unit::TestCase
     json = JSON.parse(last_response.body)
     assert_equal(json["files"].size, 2)
     assert_equal(json["files"][0]["name"], "myfile.txt")
-    FileUtils.rm_rf path
   end
   
   # Commits
@@ -214,7 +185,6 @@ class GitApiTest < Test::Unit::TestCase
     assert_equal(json[0]["message"], "My First Commit")
     assert_equal(json[1]["message"], "My Second Commit")
     assert_equal(json[0]["diffs"], nil)
-    FileUtils.rm_rf path
   end
   
   def test_read_commits_branch
@@ -225,7 +195,6 @@ class GitApiTest < Test::Unit::TestCase
     json = JSON.parse(last_response.body)
     assert_equal(json.size, 2)
     assert_equal(json[1]["message"], "My Second Commit")
-    FileUtils.rm_rf path
   end
   
   def test_read_commits_with_diffs
@@ -236,7 +205,6 @@ class GitApiTest < Test::Unit::TestCase
     json = JSON.parse(last_response.body)
     assert json[1]["diffs"].is_a?(Array)
     assert !json[1]["diffs"].first["diff"].empty?
-    FileUtils.rm_rf path
   end
   
   def test_read_commits_with_diffs_images
@@ -247,7 +215,6 @@ class GitApiTest < Test::Unit::TestCase
     json = JSON.parse(last_response.body)
     assert json[1]["diffs"].is_a?(Array)
     assert_equal("", json[1]["diffs"].first["diff"])
-    FileUtils.rm_rf path
   end
   
   # Test 404's
@@ -257,14 +224,12 @@ class GitApiTest < Test::Unit::TestCase
   def test_read_files_wrong_repo
     get "/repos/#{GIT_REPO}.git/branches/master/files/myfile.txt"
     assert_equal 404, last_response.status
-    FileUtils.rm_rf path
   end
   
   def test_read_files_wrong_file
     post '/repos', {:name => GIT_REPO}
     get "/repos/#{GIT_REPO}.git/branches/master/files/myfile.txt"
     assert_equal 404, last_response.status
-    FileUtils.rm_rf path
   end
   
   # Blobs
@@ -278,7 +243,6 @@ class GitApiTest < Test::Unit::TestCase
     assert last_response.ok?
     json = JSON.parse(last_response.body)
     assert_equal(json["data"], "Hello There")
-    FileUtils.rm_rf path
   end
   
   # Refs
@@ -292,7 +256,6 @@ class GitApiTest < Test::Unit::TestCase
     json = JSON.parse(last_response.body)
     assert_equal(json.size, 1)
     assert_equal(json[0]["ref"], "refs/heads/master")
-    FileUtils.rm_rf path
   end
   
   def test_create_ref
@@ -303,7 +266,6 @@ class GitApiTest < Test::Unit::TestCase
     assert last_response.ok?
     json = JSON.parse(last_response.body)
     assert last_response.body.include?("sha")
-    FileUtils.rm_rf path
   end
   
   # Tags
@@ -317,7 +279,6 @@ class GitApiTest < Test::Unit::TestCase
     assert last_response.ok?
     json = JSON.parse(last_response.body)
     assert last_response.body.include?("sha")
-    FileUtils.rm_rf path
   end
   
   # before making this test check something I need to be able to create a ref to this tag in Grit
@@ -327,7 +288,6 @@ class GitApiTest < Test::Unit::TestCase
     sha = JSON.parse(last_response.body)["commit_sha"]
     post "/repos/#{GIT_REPO}.git/tags", {:tag => "version1", :message => "hello", :sha => sha, :type => "commit", :user => "Rune Madsen", :email => "rune@runemadsen.com"}
     get "/repos/#{GIT_REPO}.git/tags"
-    FileUtils.rm_rf path
   end
   
   # Blame
@@ -338,7 +298,6 @@ class GitApiTest < Test::Unit::TestCase
     post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :data => "Hello There", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
     post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :data => "Hello Again", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
     get "/repos/#{GIT_REPO}.git/blame/myfile.txt"
-    FileUtils.rm_rf path
   end
   
   # Test git repo valid
@@ -353,5 +312,37 @@ class GitApiTest < Test::Unit::TestCase
     assert_equal(0, status)
     FileUtils.rm_rf "/tmp/test"
   end
+
+  # Binary
+  # ------------------------------------------------------------------
+
+  def test_binary_files_blob
+    post '/repos', {:name => GIT_REPO}
+    post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :data => "Hello There Again", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
+    post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "bruce.jpg", :data => TestHelpers.testfile("bruce.jpg").read, :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
+    
+    get "/repos/#{GIT_REPO}.git/branches/master/files/bruce.jpg"
+    json = JSON.parse(last_response.body)
+    assert json["data"].empty?
+    assert last_response.ok?
+
+    get "/repos/#{GIT_REPO}.git/branches/master/files/myfile.txt"
+    json = JSON.parse(last_response.body)
+    assert_equal "Hello There Again", json["data"]
+    assert last_response.ok?
+  end
+
+  def test_binary_files_commit_diffs
+    post '/repos', {:name => GIT_REPO}
+    post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :data => "Hello There Again", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
+    post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "bruce.jpg", :data => TestHelpers.testfile("bruce.jpg").read, :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
+    get "/repos/#{GIT_REPO}.git/commits", { :diffs => true }
+    json = JSON.parse(last_response.body)
+    assert !json[0]["diffs"].first["diff"].empty?
+    assert json[1]["diffs"].first["diff"].empty?
+  end
+
+  # Encodings
+  # ------------------------------------------------------------------
   
 end

@@ -54,9 +54,10 @@ module GitApi
     end
 
     def blob_to_hash(blob, encoding = "utf-8")
+      binary = is_binary?(blob.name, blob.data)
       { 
         :name => blob.name,
-        :data => blob.data.force_encoding(encoding),
+        :data => binary ? "" : blob.data.force_encoding(encoding),
         :type => :blob
       }
     end
@@ -108,7 +109,7 @@ module GitApi
     end
     
     def diff_to_hash(diff)
-      image_diff = is_image?(diff.a_path) || is_image?(diff.b_path)
+      binary = is_binary?(diff.a_path || diff.b_path, diff.diff)
       {
         :a_path => diff.a_path,
         :b_path => diff.b_path,
@@ -118,7 +119,7 @@ module GitApi
         :deleted_file => diff.deleted_file,
         :renamed_file => diff.renamed_file,
         :similarity_index => diff.similarity_index,
-        :diff => image_diff ? "" : iconv_utf8(diff.diff)
+        :diff => binary ? "" : iconv_utf8(diff.diff)
       }
     end
     
@@ -129,9 +130,16 @@ module GitApi
       Iconv.new('UTF-8//IGNORE', 'US-ASCII').iconv(s + ' ')[0..-2]
     end
     
-    def is_image?(filename)
-      Linguist::FileBlob.new(filename).image?
-      #Linguist::FileBlob.new(filename).binary?
+    def is_binary?(filename, data)
+      
+      # first check if its an image
+      return true if Linguist::FileBlob.new(filename).image?
+
+      # then trawl content to check for binary
+      @detector ||= CharlockHolmes::EncodingDetector.new
+      result = @detector.detect(data)
+      return result[:type] == :binary
+      
     end
     
   end
