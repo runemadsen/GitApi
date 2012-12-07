@@ -4,6 +4,7 @@ require 'rack/test'
 require 'fileutils'
 require 'grit'
 require 'json'
+require 'cgi'
 
 ENV['RACK_ENV'] = 'test'
 GIT_PATH = "/tmp/testrepos"
