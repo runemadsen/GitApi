@@ -350,7 +350,35 @@ class GitApiTest < Test::Unit::TestCase
     assert json[2]["diffs"].first["diff"].empty?
   end
 
-  # Encodings
+  # Repo Size
   # ------------------------------------------------------------------
+
+  def test_repo_size
+    post '/repos', {:name => GIT_REPO}
+    file = TestHelpers.testfile("bruce.jpg")
+    total_size = 0
+    increments = []
+    10.times do |i|
+      post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "bruce#{i}.jpg", :data => file.read, :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
+      size_line = `cd #{path};du -c | grep total`
+      size = /^\d{1,}/.match(size_line)[0].to_i
+      increments << size - total_size
+      total_size = size
+    end
+    # first increment will be basic repo, so skip that
+    increments.shift
+    # all increments should be within same range, not exponential
+    assert increments.max / increments.min < 2, "the max and min increment must be in a twofold range of each other"
+  end
   
 end
+
+
+
+
+
+
+
+
+
+
