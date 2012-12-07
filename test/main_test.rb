@@ -320,8 +320,14 @@ class GitApiTest < Test::Unit::TestCase
     post '/repos', {:name => GIT_REPO}
     post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :data => "Hello There Again", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
     post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "bruce.jpg", :data => TestHelpers.testfile("bruce.jpg").read, :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
+    post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "bruce.pdf", :data => TestHelpers.testfile("bruce.pdf").read, :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
     
     get "/repos/#{GIT_REPO}.git/branches/master/files/bruce.jpg"
+    json = JSON.parse(last_response.body)
+    assert json["data"].empty?
+    assert last_response.ok?
+
+    get "/repos/#{GIT_REPO}.git/branches/master/files/bruce.pdf"
     json = JSON.parse(last_response.body)
     assert json["data"].empty?
     assert last_response.ok?
@@ -336,10 +342,12 @@ class GitApiTest < Test::Unit::TestCase
     post '/repos', {:name => GIT_REPO}
     post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "myfile.txt", :data => "Hello There Again", :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
     post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "bruce.jpg", :data => TestHelpers.testfile("bruce.jpg").read, :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
+    post "/repos/#{GIT_REPO}.git/branches/master/files", {:name => "bruce.pdf", :data => TestHelpers.testfile("bruce.pdf").read, :encoding => "utf-8", :user => "Rune Madsen", :email => "rune@runemadsen.com", :message => "My First Commit"}
     get "/repos/#{GIT_REPO}.git/commits", { :diffs => true }
     json = JSON.parse(last_response.body)
     assert !json[0]["diffs"].first["diff"].empty?
     assert json[1]["diffs"].first["diff"].empty?
+    assert json[2]["diffs"].first["diff"].empty?
   end
 
   # Encodings
