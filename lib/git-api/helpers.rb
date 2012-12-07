@@ -138,7 +138,6 @@ module GitApi
       # then trawl content to check for binary
       @detector ||= CharlockHolmes::EncodingDetector.new
       result = @detector.detect(data)
-      puts result.inspect
       return result[:type] == :binary
       
     end
