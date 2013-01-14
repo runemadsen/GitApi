@@ -131,15 +131,14 @@ module GitApi
     end
     
     def is_binary?(filename, data)
-      
       # first check if its an image
       return true if Linguist::FileBlob.new(filename).image?
+      return false if filename.match(/\.asciidoc/)
 
       # then trawl content to check for binary
       @detector ||= CharlockHolmes::EncodingDetector.new
       result = @detector.detect(data)
       return result[:type] == :binary
-      
     end
     
   end
